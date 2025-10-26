@@ -1,145 +1,131 @@
-// script.js — standalone interactive Waktu Solat (modern gradient UI)
-const zonMapping = [
-  { name: "Kuala Lumpur", code: "WLY01" },
-  { name: "Putrajaya", code: "WLY02" },
-  { name: "Selangor", code: "SGR01" },
-  { name: "Johor", code: "JHR01" },
-  { name: "Kedah", code: "KDH01" },
-  { name: "Kelantan", code: "KTN01" },
-  { name: "Melaka", code: "MLK01" },
-  { name: "Negeri Sembilan", code: "NGS01" },
-  { name: "Pahang", code: "PHG01" },
-  { name: "Pulau Pinang", code: "PNG01" },
-  { name: "Perak", code: "PRK01" },
-  { name: "Perlis", code: "PLS01" },
-  { name: "Sabah", code: "SBH01" },
-  { name: "Sarawak", code: "SWK01" },
-  { name: "Terengganu", code: "TRG01" }
-];
 
-const apiBase = "https://api.waktusolat.app/v2/solat/"; // main public API
+// =============================
+// 📍 SENARAI ZON & NEGERI
+// =============================
+const zonNegeri = {
+  "WLY01": "Kuala Lumpur",
+  "WLY02": "Putrajaya",
+  "SGR01": "Selangor",
+  "JHR01": "Johor",
+  "KDH01": "Kedah",
+  "KTN01": "Kelantan",
+  "MLK01": "Melaka",
+  "NSN01": "Negeri Sembilan",
+  "PHG01": "Pahang",
+  "PRK01": "Perak",
+  "PLS01": "Perlis",
+  "PNG01": "Pulau Pinang",
+  "SBH01": "Sabah",
+  "SWK01": "Sarawak",
+  "TRG01": "Terengganu",
+  "LBN01": "Labuan"
+};
 
-// DOM
-const btnManual = document.getElementById('btnManual');
-const controls = document.getElementById('controls');
-const zoneSelect = document.getElementById('zoneSelect');
-const statusEl = document.getElementById('status');
-const spinner = document.getElementById('spinner');
-const result = document.getElementById('result');
-const zoneLabel = document.getElementById('zoneLabel');
-const prayerList = document.getElementById('prayerList');
-document.getElementById('year').textContent = new Date().getFullYear();
+// =============================
+// 🕌 MULA PROSES
+// =============================
+document.addEventListener("DOMContentLoaded", () => {
+  const negeriSelect = document.getElementById("negeri");
+  const result = document.getElementById("result");
 
-// populate select
-zonMapping.forEach(z=>{
-  const o = document.createElement('option');
-  o.value = z.code; o.textContent = z.name; zoneSelect.appendChild(o);
-});
+  // Populate dropdown
+  for (const [zone, name] of Object.entries(zonNegeri)) {
+    const opt = document.createElement("option");
+    opt.value = zone;
+    opt.textContent = name;
+    negeriSelect.appendChild(opt);
+  }
 
-btnManual.addEventListener('click', () => {
-  controls.classList.toggle('hidden');
-});
+  // Cuba auto detect lokasi
+  autoDetectLokasi();
 
-// ui helpers
-function showSpinner(v){ spinner.classList.toggle('hidden', !v); }
-function setStatus(s){ statusEl.textContent = s || ''; }
-function showResult(v){ result.classList.toggle('hidden', !v); }
-
-// render prayers
-function renderPrayers(p){
-  prayerList.innerHTML = '';
-  const keys = [
-    ['Subuh','Subuh','fajr'],
-    ['Zohor','Zohor','dhuhr'],
-    ['Asar','Asar','asr'],
-    ['Maghrib','Maghrib','maghrib'],
-    ['Isyak','Isyak','isha']
-  ];
-  keys.forEach(k=>{
-    const label = k[0];
-    const v = p[k[1]] ?? p[k[2]] ?? p[label] ?? '—';
-    const li = document.createElement('li');
-    li.textContent = `${label}: ${v}`;
-    prayerList.appendChild(li);
+  // Bila user pilih negeri manual
+  negeriSelect.addEventListener("change", (e) => {
+    const zone = e.target.value;
+    if (zone) {
+      fetchWaktu(zone);
+    }
   });
-}
-
-// fetch with fallback
-async function fetchWaktuByZone(zone){
-  if(!zone) return;
-  setStatus('Memuatkan waktu solat…');
-  showResult(false);
-  showSpinner(true);
-  zoneLabel.textContent = zone;
-  try {
-    const r = await fetch(apiBase + zone);
-    const j = await r.json();
-    const data = j?.prayerTime || j?.data?.prayerTime || j;
-    if(!data) throw new Error('no data');
-    renderPrayers(data);
-    setStatus('');
-  } catch(err){
-    // try same endpoint again (backup attempt)
-    try{
-      const r2 = await fetch(apiBase + zone);
-      const j2 = await r2.json();
-      const data2 = j2?.prayerTime || j2?.data?.prayerTime || j2;
-      if(!data2) throw new Error('no data2');
-      renderPrayers(data2);
-      setStatus('🔄 Data dari sumber backup');
-    } catch(e){
-      setStatus('❌ Gagal dapat waktu solat');
-      prayerList.innerHTML = '';
-    }
-  } finally {
-    showSpinner(false);
-    showResult(true);
-  }
-}
-
-// reverse geocode -> zone
-async function detectZoneByCoords(lat, lon){
-  try {
-    const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-    const j = await res.json();
-    const negeri = j.principalSubdivision || j.locality || '';
-    const matched = zonMapping.find(z => negeri && negeri.toLowerCase().includes(z.name.toLowerCase()));
-    return matched ? matched.code : null;
-  } catch(e){
-    return null;
-  }
-}
-
-// try geolocation
-function tryAutoLocation(){
-  setStatus('Mencuba kesan lokasi…');
-  if(!navigator.geolocation){
-    setStatus('Browser tidak menyokong lokasi. Sila pilih negeri manual.');
-    controls.classList.remove('hidden');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const { latitude, longitude } = pos.coords;
-    setStatus(`Lokasi dikesan: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-    const zone = await detectZoneByCoords(latitude, longitude);
-    if(zone){
-      setStatus(`Zon dikesan: ${zone}`);
-      fetchWaktuByZone(zone);
-    } else {
-      setStatus('Tidak dapat tentukan negeri dari lokasi — sila pilih negeri manual.');
-      controls.classList.remove('hidden');
-    }
-  }, err=>{
-    setStatus('Lokasi tidak dibenarkan / gagal. Sila pilih negeri manual.');
-    controls.classList.remove('hidden');
-  }, {timeout:10000, maximumAge:60000});
-}
-
-// dropdown change
-zoneSelect.addEventListener('change', e=> {
-  const z = e.target.value;
-  if(z) fetchWaktuByZone(z);
 });
 
-// init
-tryAutoLocation();
+// =============================
+// 🌍 AUTO DETECT LOKASI
+// =============================
+function autoDetectLokasi() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // API lookup zon ikut lokasi
+        try {
+          const res = await fetch(`https://api.waktusolat.app/v2/zone/${latitude},${longitude}`);
+          const data = await res.json();
+          if (data && data.zone) {
+            fetchWaktu(data.zone);
+            document.getElementById("negeri").value = data.zone;
+          } else {
+            showError("Tidak dapat kenal pasti zon lokasi.");
+          }
+        } catch (e) {
+          showError("Ralat semasa dapatkan lokasi zon.");
+        }
+      },
+      () => {
+        showError("Akses lokasi ditolak. Sila pilih negeri secara manual.");
+      }
+    );
+  } else {
+    showError("Peranti tidak menyokong geolocation.");
+  }
+}
+
+// =============================
+// ⏰ FETCH WAKTU SOLAT
+// =============================
+async function fetchWaktu(zone) {
+  const result = document.getElementById("result");
+  result.innerHTML = "<p>⏳ Memuatkan waktu solat...</p>";
+
+  try {
+    const apiUrl = `https://api.waktusolat.app/v2/solat/${zone}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    if (data && data.prayerTime) {
+      displayWaktu(data.prayerTime, data.zoneName);
+    } else {
+      showError("❌ Tiada data waktu solat ditemui.");
+    }
+  } catch (err) {
+    console.error(err);
+    showError("❌ Gagal mendapatkan waktu solat. Semak sambungan internet.");
+  }
+}
+
+// =============================
+// 📅 PAPAR WAKTU SOLAT
+// =============================
+function displayWaktu(waktu, zoneName) {
+  const result = document.getElementById("result");
+  result.innerHTML = `
+    <div class="card">
+      <h3>📍 Zon: ${zoneName}</h3>
+      <ul>
+        <li>🌅 Subuh: <b>${waktu.Subuh}</b></li>
+        <li>☀️ Zohor: <b>${waktu.Zohor}</b></li>
+        <li>🌇 Asar: <b>${waktu.Asar}</b></li>
+        <li>🌆 Maghrib: <b>${waktu.Maghrib}</b></li>
+        <li>🌃 Isyak: <b>${waktu.Isyak}</b></li>
+      </ul>
+      <p>🗓 Tarikh: ${waktu.Tarikh}</p>
+    </div>
+  `;
+}
+
+// =============================
+// ⚠️ PAPAR RALAT
+// =============================
+function showError(msg) {
+  const result = document.getElementById("result");
+  result.innerHTML = `<p style="color:red;">${msg}</p>`;
+}
