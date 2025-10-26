@@ -1,4 +1,3 @@
-
 // =============================
 // 📍 SENARAI ZON & NEGERI
 // =============================
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const negeriSelect = document.getElementById("negeri");
   const result = document.getElementById("result");
 
-  // Populate dropdown
+  // Populate dropdown list
   for (const [zone, name] of Object.entries(zonNegeri)) {
     const opt = document.createElement("option");
     opt.value = zone;
@@ -36,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     negeriSelect.appendChild(opt);
   }
 
-  // Cuba auto detect lokasi
+  // Cuba auto detect lokasi — tapi tak halang manual
   autoDetectLokasi();
 
   // Bila user pilih negeri manual
@@ -52,31 +51,28 @@ document.addEventListener("DOMContentLoaded", () => {
 // 🌍 AUTO DETECT LOKASI
 // =============================
 function autoDetectLokasi() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        // API lookup zon ikut lokasi
-        try {
-          const res = await fetch(`https://api.waktusolat.app/v2/zone/${latitude},${longitude}`);
-          const data = await res.json();
-          if (data && data.zone) {
-            fetchWaktu(data.zone);
-            document.getElementById("negeri").value = data.zone;
-          } else {
-            showError("Tidak dapat kenal pasti zon lokasi.");
-          }
-        } catch (e) {
-          showError("Ralat semasa dapatkan lokasi zon.");
+  if (!navigator.geolocation) return; // terus keluar kalau tak support
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const res = await fetch(`https://api.waktusolat.app/v2/zone/${latitude},${longitude}`);
+        const data = await res.json();
+
+        if (data && data.zone) {
+          const select = document.getElementById("negeri");
+          select.value = data.zone;
+          fetchWaktu(data.zone);
         }
-      },
-      () => {
-        showError("Akses lokasi ditolak. Sila pilih negeri secara manual.");
+      } catch (e) {
+        console.warn("Auto detect gagal:", e);
       }
-    );
-  } else {
-    showError("Peranti tidak menyokong geolocation.");
-  }
+    },
+    (err) => {
+      console.log("Auto detect off:", err.message);
+    }
+  );
 }
 
 // =============================
