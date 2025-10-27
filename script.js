@@ -1,4 +1,3 @@
-
 // =============================
 // 📍 SENARAI ZON & NEGERI
 // =============================
@@ -42,9 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Bila user pilih negeri manual
   negeriSelect.addEventListener("change", (e) => {
     const zone = e.target.value;
-    if (zone) {
-      fetchWaktu(zone);
-    }
+    if (zone) fetchWaktu(zone);
   });
 });
 
@@ -56,7 +53,6 @@ function autoDetectLokasi() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        // API lookup zon ikut lokasi
         try {
           const res = await fetch(`https://api.waktusolat.app/v2/zone/${latitude},${longitude}`);
           const data = await res.json();
@@ -70,9 +66,7 @@ function autoDetectLokasi() {
           showError("Ralat semasa dapatkan lokasi zon.");
         }
       },
-      () => {
-        showError("Akses lokasi ditolak. Sila pilih negeri secara manual.");
-      }
+      () => showError("Akses lokasi ditolak. Sila pilih negeri secara manual.")
     );
   } else {
     showError("Peranti tidak menyokong geolocation.");
@@ -91,8 +85,11 @@ async function fetchWaktu(zone) {
     const res = await fetch(apiUrl);
     const data = await res.json();
 
-    if (data && data.prayerTime) {
-      displayWaktu(data.prayerTime, data.zoneName);
+    if (data && data.data && data.data.length > 0) {
+      const waktu = data.data[0].times;
+      const zoneName = data.zone?.name || zonNegeri[zone] || zone;
+      const tarikh = data.data[0].date;
+      displayWaktu(waktu, zoneName, tarikh);
     } else {
       showError("❌ Tiada data waktu solat ditemui.");
     }
@@ -105,7 +102,7 @@ async function fetchWaktu(zone) {
 // =============================
 // 📅 PAPAR WAKTU SOLAT
 // =============================
-function displayWaktu(waktu, zoneName) {
+function displayWaktu(waktu, zoneName, tarikh) {
   const result = document.getElementById("result");
   result.innerHTML = `
     <div class="card">
@@ -117,7 +114,7 @@ function displayWaktu(waktu, zoneName) {
         <li>🌆 Maghrib: <b>${waktu.Maghrib}</b></li>
         <li>🌃 Isyak: <b>${waktu.Isyak}</b></li>
       </ul>
-      <p>🗓 Tarikh: ${waktu.Tarikh}</p>
+      <p>🗓 Tarikh: ${tarikh}</p>
     </div>
   `;
 }
