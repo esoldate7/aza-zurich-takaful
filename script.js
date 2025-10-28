@@ -111,16 +111,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function formatNama(key) {
-    const map = {
-      imsak: "Imsak",
-      fajr: "Subuh",
-      syuruk: "Syuruk",
-      dhuhr: "Zohor",
-      asr: "Asar",
-      maghrib: "Maghrib",
-      isha: "Isyak"
-    };
-    return map[key] || key;
-  }
-});
+  function displayWaktu(prayerTimes, zoneName) {
+  const result = document.getElementById("result");
+  result.classList.remove("hidden");
+
+  // Ambil hari pertama sahaja (biasanya index 0)
+  const hariIni = prayerTimes[0];
+
+  result.innerHTML = `
+    <div class="card">
+      <h3>📍 Zon: ${zoneName}</h3>
+      <ul>
+        <li>🌅 Subuh: <b>${hariIni.time.Subuh}</b></li>
+        <li>☀️ Zohor: <b>${hariIni.time.Zohor}</b></li>
+        <li>🌇 Asar: <b>${hariIni.time.Asar}</b></li>
+        <li>🌆 Maghrib: <b>${hariIni.time.Maghrib}</b></li>
+        <li>🌃 Isyak: <b>${hariIni.time.Isyak}</b></li>
+      </ul>
+      <p>🗓 Tarikh: ${hariIni.date}</p>
+    </div>
+  `;
+}
