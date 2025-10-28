@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     result.classList.add("hidden");
 
     try {
-      const response = await fetch(`https://api.waktusolat.app/v2/solat/${zone}`);
+      const response = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
       const data = await response.json();
 
       if (!data || !data.prayers) throw new Error("Tiada data.");
