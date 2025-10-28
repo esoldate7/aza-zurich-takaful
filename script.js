@@ -1,134 +1,85 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const negeriSelect = document.getElementById("zoneSelect");
   const btnManual = document.getElementById("btnManual");
   const controls = document.getElementById("controls");
+  const zoneSelect = document.getElementById("zoneSelect");
   const status = document.getElementById("status");
   const spinner = document.getElementById("spinner");
   const result = document.getElementById("result");
   const zoneLabel = document.getElementById("zoneLabel");
   const prayerList = document.getElementById("prayerList");
+  const year = document.getElementById("year");
 
-  // Peta kod zon JAKIM
-  const zonNegeri = {
+  year.textContent = new Date().getFullYear();
+
+  const zones = {
     "WLY01": "Wilayah Persekutuan Kuala Lumpur",
     "WLY02": "Wilayah Persekutuan Labuan",
     "WLY03": "Wilayah Persekutuan Putrajaya",
     "JHR01": "Johor Bahru, Kota Tinggi, Mersing",
-    "KDH01": "Kedah - Kota Setar, Kubang Pasu, Pokok Sena",
-    "KTN01": "Kelantan",
-    "MLK01": "Melaka",
-    "NSN01": "Negeri Sembilan",
-    "PHG01": "Pahang Barat",
-    "PRK01": "Perak Utara",
-    "PLS01": "Perlis",
-    "PNG01": "Pulau Pinang",
-    "SBH01": "Sabah Barat",
-    "SWK01": "Sarawak Utara",
-    "SGR01": "Selangor",
-    "TRG01": "Terengganu"
+    "KDH01": "Kota Setar, Kubang Pasu, Pokok Sena",
+    "KTN01": "Kota Bharu, Bachok, Pasir Puteh",
+    "MLK01": "Seluruh Negeri Melaka",
+    "NSN01": "Seremban, Port Dickson",
+    "PHG01": "Kuantan, Pekan, Rompin",
+    "PRK01": "Tapah, Slim River, Tanjung Malim",
+    "PLS01": "Seluruh Negeri Perlis",
+    "PNG01": "Seluruh Negeri Pulau Pinang",
+    "SBH01": "Kota Kinabalu, Penampang",
+    "SWK01": "Kuching, Samarahan",
+    "SGR01": "Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor",
+    "TRG01": "Kuala Terengganu, Marang, Kuala Nerus"
   };
 
-  // Isi dropdown negeri
-  for (const [zone, name] of Object.entries(zonNegeri)) {
+  for (const [code, name] of Object.entries(zones)) {
     const opt = document.createElement("option");
-    opt.value = zone;
+    opt.value = code;
     opt.textContent = name;
-    negeriSelect.appendChild(opt);
+    zoneSelect.appendChild(opt);
   }
 
-  // Tahun footer auto update
-  document.getElementById("year").textContent = new Date().getFullYear();
-
-  // Toggle manual pilih negeri
   btnManual.addEventListener("click", () => {
     controls.classList.toggle("hidden");
   });
 
-  // Bila user pilih negeri manual
-  negeriSelect.addEventListener("change", (e) => {
-    const zone = e.target.value;
-    if (zone) fetchWaktu(zone);
-  });
+  zoneSelect.addEventListener("change", async () => {
+    const zone = zoneSelect.value;
+    if (!zone) return;
 
-  // Auto detect lokasi guna geolocation
-  autoDetectLokasi();
-
-  function autoDetectLokasi() {
-    if (!navigator.geolocation) {
-      status.textContent = "Geolokasi tidak disokong peranti ini.";
-      return;
-    }
-
-    spinner.classList.remove("hidden");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        dapatkanZon(latitude, longitude);
-      },
-      () => {
-        spinner.classList.add("hidden");
-        status.textContent = "Tidak dapat kesan lokasi. Sila pilih negeri secara manual.";
-        controls.classList.remove("hidden");
-      }
-    );
-  }
-
-  // Padankan lokasi pengguna dengan zon
-  function dapatkanZon(lat, lon) {
-    // Untuk versi offline ringkas, kita auto fallback ke Kuala Lumpur
-    const zone = "WLY01";
-    fetchWaktu(zone);
-  }
-
-  // Fetch waktu solat
-  async function fetchWaktu(zone) {
-    spinner.classList.remove("hidden");
     status.textContent = "Mengambil data waktu solat...";
+    spinner.classList.remove("hidden");
     result.classList.add("hidden");
 
     try {
-      const response = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
+      const apiUrl = `https://corsproxy.io/?https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=day&zone=${zone}`;
+      const response = await fetch(apiUrl);
       const data = await response.json();
 
-      if (!data || !data.prayers) throw new Error("Tiada data.");
+      if (data.prayerTime && data.prayerTime.length > 0) {
+        displayWaktu(data, zone);
+      } else {
+        status.textContent = "❌ Tiada data waktu solat ditemui.";
+      }
+    } catch (err) {
+      status.textContent = "⚠️ Ralat mengambil data waktu solat.";
+      console.error(err);
+    } finally {
+      spinner.classList.add("hidden");
+    }
+  });
 
-      const prayers = data.prayers;
-      zoneLabel.textContent = zonNegeri[zone] || zone;
-      prayerList.innerHTML = "";
+  function displayWaktu(data, zone) {
+    status.textContent = "";
+    result.classList.remove("hidden");
+    zoneLabel.textContent = zones[zone] || zone;
+    prayerList.innerHTML = "";
 
-      for (const [name, time] of Object.entries(prayers)) {
+    const waktu = data.prayerTime[0];
+    for (const [key, value] of Object.entries(waktu)) {
+      if (key !== "date") {
         const li = document.createElement("li");
-        li.textContent = `${formatNama(name)}: ${time}`;
+        li.textContent = `${key.toUpperCase()}: ${value}`;
         prayerList.appendChild(li);
       }
-
-      spinner.classList.add("hidden");
-      status.textContent = "";
-      result.classList.remove("hidden");
-    } catch (err) {
-      spinner.classList.add("hidden");
-      status.textContent = "Ralat mengambil data waktu solat.";
     }
   }
-
-  function displayWaktu(prayerTimes, zoneName) {
-  const result = document.getElementById("result");
-  result.classList.remove("hidden");
-
-  // Ambil hari pertama sahaja (biasanya index 0)
-  const hariIni = prayerTimes[0];
-
-  result.innerHTML = `
-    <div class="card">
-      <h3>📍 Zon: ${zoneName}</h3>
-      <ul>
-        <li>🌅 Subuh: <b>${hariIni.time.Subuh}</b></li>
-        <li>☀️ Zohor: <b>${hariIni.time.Zohor}</b></li>
-        <li>🌇 Asar: <b>${hariIni.time.Asar}</b></li>
-        <li>🌆 Maghrib: <b>${hariIni.time.Maghrib}</b></li>
-        <li>🌃 Isyak: <b>${hariIni.time.Isyak}</b></li>
-      </ul>
-      <p>🗓 Tarikh: ${hariIni.date}</p>
-    </div>
-  `;
-}
+});
