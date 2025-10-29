@@ -1,61 +1,62 @@
 <!doctype html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AZA Zurich Takaful — Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="wrap">
-    <header class="topcard">
-      <div class="logo-wrap">
-        <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="logo" />
+    <header class="brand">
+      <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="brand-logo" />
+      <div class="brand-text">
+        <h1>AZA Zurich Takaful AM</h1>
+        <p class="subtitle">Waktu Solat & Cuaca Semasa</p>
       </div>
-      <h1>AZA Zurich Takaful AM</h1>
-      <p class="lead">Maklumat Waktu Solat & Cuaca Semasa</p>
     </header>
 
-    <!-- Kad Waktu Solat -->
-    <section class="card" id="waktuCard">
-      <div class="card-header">
-        <h2>🕌 Waktu Solat</h2>
-        <button id="btnManual" class="btn">Pilih Negeri</button>
+    <section class="card" id="mainCard" aria-live="polite">
+      <div class="card-top">
+        <div class="loc-left">
+          <label for="zoneSelect" class="sr">Pilih Negeri / Zon</label>
+          <select id="zoneSelect" class="zone-select">
+            <option value="">— Pilih Negeri —</option>
+          </select>
+        </div>
+        <div class="loc-right" id="detectedPlace">—</div>
       </div>
 
-      <div id="controls" class="controls hidden">
-        <label for="zoneSelect" class="label">📍 Pilih negeri</label>
-        <select id="zoneSelect" class="select">
-          <option value="">-- Pilih Negeri --</option>
-        </select>
+      <div class="card-body">
+        <div id="spinner" class="spinner" aria-hidden="true"></div>
+        <div id="statusText" class="status">Mencuba kesan lokasi…</div>
+
+        <div id="content" class="content hidden">
+          <div id="waktuArea" class="waktu-area hidden">
+            <h2 class="section-title">🕌 Waktu Solat</h2>
+            <p class="zone-label">Zon: <strong id="zoneLabel">—</strong></p>
+            <ul id="prayerList" class="prayer-list"></ul>
+          </div>
+
+          <div id="cuacaArea" class="cuaca-area hidden">
+            <h2 class="section-title">🌤️ Cuaca Semasa</h2>
+            <div class="weather-row">
+              <div class="weather-icon" id="weatherIcon">—</div>
+              <div class="weather-info">
+                <div id="weatherDesc">—</div>
+                <div id="tempInfo">—</div>
+                <div id="windInfo">—</div>
+                <div id="locCoords" class="muted small">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div id="status" class="status">Mengesan lokasi…</div>
-      <div id="spinner" class="spinner hidden"></div>
-
-      <div id="result" class="result hidden">
-        <p class="zone">Zon: <strong id="zoneLabel">—</strong></p>
-        <ul id="prayerList" class="prayer-list"></ul>
-      </div>
+      <footer class="card-foot">
+        <div class="small muted">© <span id="year"></span> AZA Zurich Takaful AM</div>
+      </footer>
     </section>
-
-    <!-- Kad Cuaca -->
-    <section class="card" id="cuacaCard">
-      <div class="card-header">
-        <h2>🌤️ Cuaca Semasa</h2>
-      </div>
-
-      <div id="cuacaStatus" class="status">Memuatkan data cuaca…</div>
-      <div id="cuacaResult" class="result hidden">
-        <p><strong id="lokasiCuaca">—</strong></p>
-        <p id="suhuCuaca"></p>
-        <p id="keadaanCuaca"></p>
-      </div>
-    </section>
-
-    <footer class="footer">
-      © <span id="year"></span> AZA Zurich Takaful AM
-    </footer>
   </main>
 
   <script src="script.js"></script>
