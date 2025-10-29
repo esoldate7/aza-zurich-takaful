@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AZA Zurich Takaful — Waktu Solat</title>
+  <title>AZA Zurich Takaful — Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,12 +13,13 @@
         <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="logo" />
       </div>
       <h1>AZA Zurich Takaful AM</h1>
-      <p class="lead">Informasi takaful & waktu solat — cepat & ringkas</p>
+      <p class="lead">Maklumat Waktu Solat & Cuaca Semasa</p>
     </header>
 
+    <!-- Kad Waktu Solat -->
     <section class="card" id="waktuCard">
       <div class="card-header">
-        <h2>🕌 Waktu Solat Semasa</h2>
+        <h2>🕌 Waktu Solat</h2>
         <button id="btnManual" class="btn">Pilih Negeri</button>
       </div>
 
@@ -29,12 +30,26 @@
         </select>
       </div>
 
-      <div id="status" class="status">Mencuba kesan lokasi…</div>
-      <div id="spinner" class="spinner hidden" aria-hidden="true"></div>
+      <div id="status" class="status">Mengesan lokasi…</div>
+      <div id="spinner" class="spinner hidden"></div>
 
       <div id="result" class="result hidden">
         <p class="zone">Zon: <strong id="zoneLabel">—</strong></p>
         <ul id="prayerList" class="prayer-list"></ul>
+      </div>
+    </section>
+
+    <!-- Kad Cuaca -->
+    <section class="card" id="cuacaCard">
+      <div class="card-header">
+        <h2>🌤️ Cuaca Semasa</h2>
+      </div>
+
+      <div id="cuacaStatus" class="status">Memuatkan data cuaca…</div>
+      <div id="cuacaResult" class="result hidden">
+        <p><strong id="lokasiCuaca">—</strong></p>
+        <p id="suhuCuaca"></p>
+        <p id="keadaanCuaca"></p>
       </div>
     </section>
 
