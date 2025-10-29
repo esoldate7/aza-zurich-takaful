@@ -1,85 +1,107 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const btnManual = document.getElementById("btnManual");
-  const controls = document.getElementById("controls");
-  const zoneSelect = document.getElementById("zoneSelect");
-  const status = document.getElementById("status");
-  const spinner = document.getElementById("spinner");
-  const result = document.getElementById("result");
-  const zoneLabel = document.getElementById("zoneLabel");
-  const prayerList = document.getElementById("prayerList");
-  const year = document.getElementById("year");
+document.getElementById("year").textContent = new Date().getFullYear();
 
-  year.textContent = new Date().getFullYear();
+const btnManual = document.getElementById("btnManual");
+const zoneSelect = document.getElementById("zoneSelect");
+const statusDiv = document.getElementById("status");
+const spinner = document.getElementById("spinner");
+const resultDiv = document.getElementById("result");
+const prayerList = document.getElementById("prayerList");
+const zoneLabel = document.getElementById("zoneLabel");
 
-  const zones = {
-    "WLY01": "Wilayah Persekutuan Kuala Lumpur",
-    "WLY02": "Wilayah Persekutuan Labuan",
-    "WLY03": "Wilayah Persekutuan Putrajaya",
-    "JHR01": "Johor Bahru, Kota Tinggi, Mersing",
-    "KDH01": "Kota Setar, Kubang Pasu, Pokok Sena",
-    "KTN01": "Kota Bharu, Bachok, Pasir Puteh",
-    "MLK01": "Seluruh Negeri Melaka",
-    "NSN01": "Seremban, Port Dickson",
-    "PHG01": "Kuantan, Pekan, Rompin",
-    "PRK01": "Tapah, Slim River, Tanjung Malim",
-    "PLS01": "Seluruh Negeri Perlis",
-    "PNG01": "Seluruh Negeri Pulau Pinang",
-    "SBH01": "Kota Kinabalu, Penampang",
-    "SWK01": "Kuching, Samarahan",
-    "SGR01": "Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor",
-    "TRG01": "Kuala Terengganu, Marang, Kuala Nerus"
-  };
+const cuacaStatus = document.getElementById("cuacaStatus");
+const cuacaResult = document.getElementById("cuacaResult");
+const lokasiCuaca = document.getElementById("lokasiCuaca");
+const suhuCuaca = document.getElementById("suhuCuaca");
+const keadaanCuaca = document.getElementById("keadaanCuaca");
 
-  for (const [code, name] of Object.entries(zones)) {
-    const opt = document.createElement("option");
-    opt.value = code;
-    opt.textContent = name;
-    zoneSelect.appendChild(opt);
-  }
+const zones = {
+  "WLY01": "Kuala Lumpur & Putrajaya",
+  "SEL01": "Selangor",
+  "JHR01": "Johor",
+  "KDH01": "Kedah",
+  "KTN01": "Kelantan",
+  "MLK01": "Melaka",
+  "NSN01": "Negeri Sembilan",
+  "PHG01": "Pahang",
+  "PRK01": "Perak",
+  "PLS01": "Perlis",
+  "PNG01": "Pulau Pinang",
+  "SBH01": "Sabah",
+  "SWK01": "Sarawak",
+  "TRG01": "Terengganu",
+  "LBN01": "Labuan"
+};
 
-  btnManual.addEventListener("click", () => {
-    controls.classList.toggle("hidden");
-  });
+for (const [code, name] of Object.entries(zones)) {
+  const opt = document.createElement("option");
+  opt.value = code;
+  opt.textContent = name;
+  zoneSelect.appendChild(opt);
+}
 
-  zoneSelect.addEventListener("change", async () => {
-    const zone = zoneSelect.value;
-    if (!zone) return;
+btnManual.addEventListener("click", () => {
+  document.getElementById("controls").classList.toggle("hidden");
+});
 
-    status.textContent = "Mengambil data waktu solat...";
-    spinner.classList.remove("hidden");
-    result.classList.add("hidden");
-
-    try {
-      const apiUrl = `https://corsproxy.io/?https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=day&zone=${zone}`;
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-
-      if (data.prayerTime && data.prayerTime.length > 0) {
-        displayWaktu(data, zone);
-      } else {
-        status.textContent = "❌ Tiada data waktu solat ditemui.";
-      }
-    } catch (err) {
-      status.textContent = "⚠️ Ralat mengambil data waktu solat.";
-      console.error(err);
-    } finally {
-      spinner.classList.add("hidden");
-    }
-  });
-
-  function displayWaktu(data, zone) {
-    status.textContent = "";
-    result.classList.remove("hidden");
-    zoneLabel.textContent = zones[zone] || zone;
-    prayerList.innerHTML = "";
-
-    const waktu = data.prayerTime[0];
-    for (const [key, value] of Object.entries(waktu)) {
-      if (key !== "date") {
-        const li = document.createElement("li");
-        li.textContent = `${key.toUpperCase()}: ${value}`;
-        prayerList.appendChild(li);
-      }
-    }
+zoneSelect.addEventListener("change", () => {
+  if (zoneSelect.value) {
+    getWaktuSolat(zoneSelect.value);
   }
 });
+
+async function getWaktuSolat(zone) {
+  spinner.classList.remove("hidden");
+  statusDiv.textContent = "Mengambil data waktu solat...";
+  try {
+    const response = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
+    const data = await response.json();
+    spinner.classList.add("hidden");
+    if (data.prayers && data.zone) {
+      displayWaktu(data);
+    } else {
+      throw new Error("Data tidak sah");
+    }
+  } catch (err) {
+    spinner.classList.add("hidden");
+    statusDiv.textContent = "Ralat mengambil data waktu solat.";
+  }
+}
+
+function displayWaktu(data) {
+  resultDiv.classList.remove("hidden");
+  zoneLabel.textContent = data.zone;
+  prayerList.innerHTML = "";
+  Object.entries(data.prayers).forEach(([name, time]) => {
+    const li = document.createElement("li");
+    li.textContent = `${name}: ${time}`;
+    prayerList.appendChild(li);
+  });
+  statusDiv.textContent = "";
+}
+
+// Auto detect lokasi
+navigator.geolocation.getCurrentPosition(async (pos) => {
+  const { latitude, longitude } = pos.coords;
+  getCuaca(latitude, longitude);
+}, () => {
+  cuacaStatus.textContent = "Tidak dapat kesan lokasi, sila pilih negeri.";
+});
+
+// Cuaca
+async function getCuaca(lat, lon) {
+  cuacaStatus.textContent = "Mengambil data cuaca...";
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const weather = data.current_weather;
+    lokasiCuaca.textContent = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
+    suhuCuaca.textContent = `Suhu: ${weather.temperature}°C`;
+    keadaanCuaca.textContent = `Angin: ${weather.windspeed} km/j`;
+    cuacaStatus.textContent = "";
+    cuacaResult.classList.remove("hidden");
+  } catch {
+    cuacaStatus.textContent = "Gagal mengambil data cuaca.";
+  }
+}
