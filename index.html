@@ -1,62 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AZA Zurich Takaful — Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AZA Zurich Takaful — Waktu Solat & Cuaca</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="wrap">
-    <header class="brand">
-      <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="brand-logo" />
-      <div class="brand-text">
-        <h1>AZA Zurich Takaful AM</h1>
-        <p class="subtitle">Waktu Solat & Cuaca Semasa</p>
+    <header class="topcard">
+      <div class="logo-wrap">
+        <img src="zurich_logo_takaful.png" alt="Zurich Takaful Logo" class="logo" />
       </div>
+      <h1>AZA Zurich Takaful AM</h1>
+      <p class="lead">Waktu Solat & Cuaca — kemas kini setiap hari</p>
     </header>
 
-    <section class="card" id="mainCard" aria-live="polite">
-      <div class="card-top">
-        <div class="loc-left">
-          <label for="zoneSelect" class="sr">Pilih Negeri / Zon</label>
-          <select id="zoneSelect" class="zone-select">
-            <option value="">— Pilih Negeri —</option>
-          </select>
-        </div>
-        <div class="loc-right" id="detectedPlace">—</div>
-      </div>
-
-      <div class="card-body">
-        <div id="spinner" class="spinner" aria-hidden="true"></div>
-        <div id="statusText" class="status">Mencuba kesan lokasi…</div>
-
-        <div id="content" class="content hidden">
-          <div id="waktuArea" class="waktu-area hidden">
-            <h2 class="section-title">🕌 Waktu Solat</h2>
-            <p class="zone-label">Zon: <strong id="zoneLabel">—</strong></p>
-            <ul id="prayerList" class="prayer-list"></ul>
-          </div>
-
-          <div id="cuacaArea" class="cuaca-area hidden">
-            <h2 class="section-title">🌤️ Cuaca Semasa</h2>
-            <div class="weather-row">
-              <div class="weather-icon" id="weatherIcon">—</div>
-              <div class="weather-info">
-                <div id="weatherDesc">—</div>
-                <div id="tempInfo">—</div>
-                <div id="windInfo">—</div>
-                <div id="locCoords" class="muted small">—</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer class="card-foot">
-        <div class="small muted">© <span id="year"></span> AZA Zurich Takaful AM</div>
-      </footer>
+    <section class="card" id="solatCard">
+      <h2>🕌 Waktu Solat</h2>
+      <label for="negeri" class="label">📍 Pilih Negeri</label>
+      <select id="negeri" class="select">
+        <option value="">-- Pilih Negeri --</option>
+      </select>
+      <div id="solatResult" class="result">⏳ Sila pilih negeri atau tunggu lokasi dikesan...</div>
     </section>
+
+    <section class="card" id="cuacaCard">
+      <h2>🌤️ Cuaca Semasa</h2>
+      <div id="cuacaResult" class="result">⏳ Memuatkan cuaca semasa...</div>
+    </section>
+
+    <footer class="footer">
+      © <span id="year"></span> AZA Zurich Takaful AM
+    </footer>
   </main>
 
   <script src="script.js"></script>
