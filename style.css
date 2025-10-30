@@ -1,109 +1,73 @@
-:root{
-  --g1:#9ed8ff;
-  --g2:#0072ce;
-  --card:#ffffff;
-  --muted:#6b7280;
-  --dark:#07263f;
-  --radius:16px;
-  --shadow: 0 10px 30px rgba(2,24,63,0.10);
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #007bff, #00aaff);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background: linear-gradient(180deg,#f0f6ff 0%, #e6f0fa 100%);
-  color:var(--dark);
-  -webkit-font-smoothing:antialiased;
+.wrap {
+  width: 95%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  text-align: center;
 }
 
-.wrap{
-  max-width:520px;
-  margin:28px auto;
-  padding:16px;
+.topcard img.logo {
+  width: 100px;
+  margin: 10px auto;
+  display: block;
 }
 
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:14px;
-}
-.brand-logo{width:72px;height:auto;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-.brand-text h1{margin:0;font-size:1.1rem;color:var(--g2)}
-.subtitle{margin:0;color:var(--muted);font-size:0.9rem}
-
-/* CARD */
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
-  border-radius:var(--radius);
-  padding:14px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
+h1 {
+  font-size: 1.4rem;
+  margin-bottom: 5px;
 }
 
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:12px;
+.lead {
+  font-size: 0.9rem;
+  opacity: 0.9;
 }
 
-.zone-select{
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(0,114,206,0.12);
-  background: linear-gradient(180deg,#f7fbff, #eef7ff);
-  font-weight:600;
-  color:var(--dark);
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 20px;
+  text-align: left;
 }
 
-/* spinner + status */
-.spinner{
-  width:50px;height:50px;border-radius:50%;
-  border:5px solid rgba(0,0,0,0.06);border-top:5px solid var(--g2);
-  margin:18px auto;
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-
-.status{
-  text-align:center;color:var(--muted);margin-top:6px;font-size:0.95rem;
+.label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
 }
 
-/* content areas */
-.content{margin-top:8px}
-.section-title{margin:0 0 8px 0;color:var(--g2);font-size:1rem}
-.zone-label{margin:0 0 8px 0;color:var(--muted);font-weight:600}
-.prayer-list{list-style:none;padding:0;margin:0 0 12px 0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.prayer-list li{background:linear-gradient(180deg,#f5fbff,#eef7ff);padding:8px;border-radius:10px;font-weight:600;color:var(--dark);display:flex;justify-content:space-between;align-items:center}
-
-/* weather */
-.weather-row{display:flex;gap:12px;align-items:center}
-.weather-icon{font-size:40px;width:56px;height:56px;border-radius:12px;background:linear-gradient(180deg,var(--g1),#d0eaff);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(0,114,206,0.08)}
-.weather-info{display:flex;flex-direction:column;gap:4px}
-.muted{color:var(--muted)}
-.small{font-size:0.85rem}
-
-/* footer */
-.card-foot{margin-top:14px;display:flex;justify-content:center}
-
-/* Hidden helper */
-.hidden{display:none}
-
-/* Animations: sequential fade + slide-up */
-.fadeUp{opacity:0;transform:translateY(8px);animation:fadeUpIn 420ms ease forwards}
-.fadeUp.delay-1{animation-delay:120ms}
-.fadeUp.delay-2{animation-delay:280ms}
-
-@keyframes fadeUpIn{
-  to{opacity:1;transform:translateY(0)}
+.select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  margin-bottom: 10px;
 }
 
-/* responsive */
-@media(max-width:420px){
-  .prayer-list{grid-template-columns:1fr}
-  .brand-logo{width:64px}
-  .zone-select{font-size:14px}
+.result {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.footer {
+  font-size: 0.8rem;
+  margin-top: 20px;
+  opacity: 0.8;
 }
