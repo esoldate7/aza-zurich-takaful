@@ -108,21 +108,82 @@ h1 {
 .prod-details{ margin-top:10px; font-size:0.9rem; color:#234861; display:none; }
 .prod-details.open{ display:block; }
 
-/* Modal */
-.modal{
-  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
-  background:rgba(4,10,20,0.45); z-index:60; padding:20px;
+/* ===== Modal Fix ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 18, 43, 0.55);
+  z-index: 999;
+  padding: 20px;
 }
-.modal-panel{
-  width:100%; max-width:420px; background:#fff; color:#07263f; border-radius:12px;
-  padding:16px; box-shadow:0 12px 36px rgba(2,24,63,0.25); position:relative;
+.modal:not(.hidden) {
+  display: flex;
 }
-.modal-close{ position:absolute; right:12px; top:12px; background:transparent; border:none; font-size:16px; cursor:pointer; }
-.modal input, .modal textarea{
-  width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef9; margin-top:8px;
+.modal-panel {
+  background: #fff;
+  color: #07263f;
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  animation: modalPop 0.25s ease;
 }
-.modal textarea{ min-height:80px; resize:vertical; }
-
-.modal-actions{ display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
-.btn.primary{ background:linear-gradient(180deg,var(--g1),var(--g2)); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
-.btn.ghost{ background:transparent; border:1px solid #cedeee; padding:8px 12px; cursor:pointer; }
+@keyframes modalPop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #00325a;
+}
+.modal-title {
+  margin: 0 0 5px 0;
+  color: #00325a;
+  text-align: center;
+}
+.modal-form input,
+.modal-form textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e3e9f4;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #002b4e;
+}
+.modal-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+.btn.primary {
+  background: linear-gradient(180deg, var(--g1), var(--g2));
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn.ghost {
+  background: transparent;
+  border: 1px solid #cdd8e6;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  }
