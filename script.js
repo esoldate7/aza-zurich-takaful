@@ -159,3 +159,127 @@ async function autoDetectCuaca() {
 function showError(msg) {
   document.getElementById("solatResult").innerHTML = `<p style="color:#ffcccc;">${msg}</p>`;
 }
+// ===== Info Produk: interactive cards + modal quote (add at end of script.js) =====
+(function initProducts(){
+  const WA_NUMBER = "60123456789"; // <-- GANTI dengan nombor WhatsApp bro (no +)
+  const products = [
+    {
+      id: "ztravel",
+      title: "ZTravel",
+      icon: "✈️",
+      short: "Perlindungan perjalanan antarabangsa & domestik.",
+      details: "Liputan perjalanan: pembatalan, perubatan kecemasan, kehilangan bagasi dan bantuan 24/7."
+    },
+    {
+      id: "zdrive",
+      title: "Z-Drive Assist",
+      icon: "🛠️",
+      short: "Bantuan tepi jalan & towing 24/7 untuk kenderaan.",
+      details: "Termasuk towing, bantuan bateri, kunci terkunci, penghantaran minyak & tukar tayar kecemasan."
+    },
+    {
+      id: "zrider",
+      title: "Z-Rider",
+      icon: "🏍️",
+      short: "Takaful motosikal — perlindungan komprehensif dan TPFT.",
+      details: "Perlindungan kemalangan, liabiliti pihak ketiga, dan bantuan kecemasan."
+    },
+    {
+      id: "ztakaful",
+      title: "ZTakaful (General)",
+      icon: "🛡️",
+      short: "Pelan am untuk perlindungan aset & liabiliti.",
+      details: "Pilihan untuk kediaman, perniagaan kecil, dan perlindungan aset penting."
+    }
+  ];
+
+  const grid = document.getElementById("productsGrid");
+  const modal = document.getElementById("quoteModal");
+  const modalTitle = document.getElementById("modalProductTitle");
+  const form = document.getElementById("quoteForm");
+  const modalClose = document.getElementById("modalClose");
+  const modalCancel = document.getElementById("modalCancel");
+
+  // render cards
+  products.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "prod-card";
+    card.innerHTML = `
+      <div class="prod-head">
+        <div class="prod-icon">${p.icon}</div>
+        <div style="flex:1">
+          <p class="prod-title">${p.title}</p>
+          <p class="prod-short">${p.short}</p>
+        </div>
+      </div>
+      <div class="prod-actions">
+        <button class="btn small" data-action="toggle" data-id="${p.id}">Details</button>
+        <button class="btn small ghost" data-action="quote" data-id="${p.id}">Request Quote</button>
+      </div>
+      <div class="prod-details" id="details-${p.id}">${p.details}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // event delegation for toggles & quote
+  grid.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (action === "toggle") {
+      const d = document.getElementById(`details-${id}`);
+      d.classList.toggle("open");
+    } else if (action === "quote") {
+      const prod = products.find(x => x.id === id);
+      openModal(prod);
+    }
+  });
+
+  // open modal prefill
+  function openModal(prod){
+    modalTitle.textContent = `Produk: ${prod.title}`;
+    // clear form
+    form.reset();
+    // store product id in form dataset
+    form.dataset.product = prod.title;
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden","false");
+  }
+
+  function closeModal(){
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden","true");
+  }
+
+  modalClose.addEventListener("click", closeModal);
+  modalCancel.addEventListener("click", closeModal);
+
+  // handle form submit -> open WhatsApp with prefilled message
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const pname = form.dataset.product || "Produk";
+    const name = document.getElementById("q_name").value.trim();
+    const phone = document.getElementById("q_phone").value.trim();
+    const email = document.getElementById("q_email").value.trim();
+    const msg = document.getElementById("q_message").value.trim();
+
+    // prepare message
+    let text = `Permintaan Sebutharga (${pname})%0ANama: ${encodeURIComponent(name)}%0ANo Telefon: ${encodeURIComponent(phone)}`;
+    if (email) text += `%0AEmel: ${encodeURIComponent(email)}`;
+    if (msg) text += `%0ANota: ${encodeURIComponent(msg)}`;
+
+    // WhatsApp Web URL
+    const waUrl = `https://wa.me/${60192506999}?text=${text}`;
+
+    // open whatsapp (new tab)
+    window.open(waUrl, "_blank");
+    closeModal();
+  });
+
+  // close modal on background click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+})();
