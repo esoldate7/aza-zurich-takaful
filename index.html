@@ -1,66 +1,300 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AZA Zurich Takaful — Waktu Solat & Cuaca</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zurich Takaful Info</title>
+<style>
+/* ===========================
+   🌈 GAYA UTAMA
+=========================== */
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, #e7f0ff 0%, #ffffff 100%);
+  color: #1e3557;
+}
+
+header {
+  background: linear-gradient(135deg, #007bff, #0052cc);
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+}
+
+main {
+  max-width: 900px;
+  margin: 25px auto;
+  padding: 0 15px;
+}
+
+/* ===========================
+   💼 PRODUK ZURICH
+=========================== */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-bottom: 25px;
+}
+.card h2 {
+  color: #003366;
+  margin-bottom: 15px;
+}
+
+.produk-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+.produk-card {
+  background: linear-gradient(160deg, #eaf3ff, #f6fbff);
+  border: 1px solid #d7e2f5;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.produk-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.produk-card h3 {
+  color: #004b93;
+  margin-bottom: 6px;
+}
+.produk-card p {
+  font-size: 0.9rem;
+  color: #27496d;
+  margin-bottom: 10px;
+}
+.produk-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  background: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.25s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+.btn:hover {
+  background: #005fcc;
+}
+.btn.small {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+.btn.primary {
+  background: #007bff;
+}
+.btn.primary:hover {
+  background: #005ecc;
+}
+
+/* ===========================
+   💬 MODAL FORM
+=========================== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.close {
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #555;
+}
+.close:hover {
+  color: #000;
+}
+form input, form select, form textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+}
+form textarea {
+  resize: vertical;
+}
+form button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+form button:hover {
+  background: #005ecc;
+}
+</style>
 </head>
 <body>
-  <main class="wrap">
-    <header class="topcard">
-      <div class="logo-wrap">
-        <img src="zurich_logo_takaful.png" alt="Zurich Takaful Logo" class="logo" />
-      </div>
-      <h1>AZA Zurich Takaful AM</h1>
-      <p class="lead">Waktu Solat & Cuaca — kemas kini setiap hari</p>
-    </header>
 
-    <section class="card" id="solatCard">
-      <h2>🕌 Waktu Solat</h2>
-      <label for="negeri" class="label">📍 Pilih Negeri</label>
-      <select id="negeri" class="select">
-        <option value="">-- Pilih Negeri --</option>
-      </select>
-      <div id="solatResult" class="result">⏳ Sila pilih negeri atau tunggu lokasi dikesan...</div>
-    </section>
+<header>
+  <h1>Zurich Takaful Info & Quote</h1>
+</header>
 
-    <section class="card" id="cuacaCard">
-      <h2>🌤️ Cuaca Semasa</h2>
-      <div id="cuacaResult" class="result">⏳ Memuatkan cuaca semasa...</div>
-    </section>
+<main>
 
-    <footer class="footer">
-      © <span id="year"></span> AZA Zurich Takaful AM
-    </footer>
-  </main>
+  <!-- PRODUK ZURICH -->
+  <section class="card" id="produkSection">
+    <h2>💼 Produk Zurich Takaful</h2>
+    <div id="produkList" class="produk-grid"></div>
+  </section>
 
-  <script src="script.js"></script>
-  <!-- ===== Info Produk Zurich ===== -->
-<section class="card" id="produkCard">
-  <h2>🛡️ Produk Zurich Takaful</h2>
-  <div id="productsGrid" class="products-grid"></div>
-</section>
-<!-- Modal Request Quote (fixed version) -->
-<div id="quoteModal" class="modal hidden" aria-hidden="true">
-  <div class="modal-panel">
-    <button id="modalClose" class="modal-close">✕</button>
-    <h3 class="modal-title">Request Quotation</h3>
-    <p id="modalProductTitle" class="muted"></p>
+</main>
 
-    <form id="quoteForm" class="modal-form">
-      <input type="text" id="q_name" name="name" placeholder="Nama penuh" required />
-      <input type="tel" id="q_phone" name="phone" placeholder="No. Telefon (contoh: 6012...)" required />
-      <input type="email" id="q_email" name="email" placeholder="Emel (pilihan)" />
-      <textarea id="q_message" name="message" placeholder="Maklumat ringkas / pertanyaan"></textarea>
+<!-- ===========================
+     💬 MODAL FORM
+=========================== -->
+<div id="quoteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Request Quote</h3>
+      <span class="close" onclick="closeQuoteModal()">&times;</span>
+    </div>
+    <form id="quoteForm" onsubmit="submitQuote(event)">
+      <label>Nama Penuh:</label>
+      <input type="text" id="nama" required>
 
-      <div class="modal-actions">
-        <button type="submit" class="btn primary">📩 Hantar ke WhatsApp</button>
-        <button type="button" id="modalCancel" class="btn ghost">Batal</button>
-      </div>
+      <label>Email:</label>
+      <input type="email" id="email" required>
+
+      <label>Produk Dipilih:</label>
+      <input type="text" id="produk" readonly>
+
+      <label>Mesej Tambahan:</label>
+      <textarea id="mesej" rows="3"></textarea>
+
+      <button type="submit">Hantar Permohonan</button>
     </form>
   </div>
 </div>
+
+<script>
+// =============================
+// 💼 PRODUK ZURICH TAKAFUL
+// =============================
+const produkZurich = [
+  {
+    id: "zdrive",
+    name: "Z-Drive Assist",
+    desc: "Perlindungan lengkap untuk pemandu & kenderaan anda termasuk bantuan kecemasan jalan raya.",
+    link: "https://www.zurich.com.my/en/takaful/motor-takaful"
+  },
+  {
+    id: "zrider",
+    name: "ZRider",
+    desc: "Pelan perlindungan khas untuk penunggang motosikal dengan manfaat kemalangan diri & bantuan tunda.",
+    link: "https://www.zurich.com.my/en/takaful/motor-takaful"
+  },
+  {
+    id: "ztravel",
+    name: "ZTravel",
+    desc: "Perlindungan perjalanan domestik & antarabangsa termasuk kelewatan penerbangan dan bagasi hilang.",
+    link: "https://www.zurich.com.my/en/takaful/travel-takaful"
+  },
+  {
+    id: "ztakaful",
+    name: "ZTakaful",
+    desc: "Pelan takaful serba guna dengan perlindungan kesihatan & kecemasan keluarga.",
+    link: "https://www.zurich.com.my/en/takaful"
+  }
+];
+
+// PAPARKAN PRODUK
+function renderProduk() {
+  const container = document.getElementById("produkList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  produkZurich.forEach(prod => {
+    const div = document.createElement("div");
+    div.className = "produk-card";
+    div.innerHTML = `
+      <h3>${prod.name}</h3>
+      <p>${prod.desc}</p>
+      <div class="produk-actions">
+        <a href="${prod.link}" target="_blank" class="btn small">🌐 Info</a>
+        <button class="btn primary small" onclick="openQuoteModal('${prod.name}')">💬 Request Quote</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+document.addEventListener("DOMContentLoaded", renderProduk);
+
+// =============================
+// 💬 MODAL FUNGSI
+// =============================
+function openQuoteModal(produkNama) {
+  document.getElementById("produk").value = produkNama;
+  document.getElementById("quoteModal").style.display = "flex";
+  document.getElementById("modalTitle").textContent = "Request Quote - " + produkNama;
+}
+
+function closeQuoteModal() {
+  document.getElementById("quoteModal").style.display = "none";
+}
+
+function submitQuote(e) {
+  e.preventDefault();
+  alert("Terima kasih! Permohonan anda untuk " + document.getElementById("produk").value + " telah dihantar.");
+  closeQuoteModal();
+  e.target.reset();
+}
+</script>
 
 </body>
 </html>
