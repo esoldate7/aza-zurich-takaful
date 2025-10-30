@@ -41,26 +41,26 @@
   <h2>🛡️ Produk Zurich Takaful</h2>
   <div id="productsGrid" class="products-grid"></div>
 </section>
-
-<!-- Modal Request Quote (hidden) -->
+<!-- Modal Request Quote (fixed version) -->
 <div id="quoteModal" class="modal hidden" aria-hidden="true">
   <div class="modal-panel">
     <button id="modalClose" class="modal-close">✕</button>
-    <h3>Request Quotation</h3>
+    <h3 class="modal-title">Request Quotation</h3>
     <p id="modalProductTitle" class="muted"></p>
 
-    <form id="quoteForm">
+    <form id="quoteForm" class="modal-form">
       <input type="text" id="q_name" name="name" placeholder="Nama penuh" required />
-      <input type="tel" id="q_phone" name="phone" placeholder="No. Telefon (60192506999)" required />
+      <input type="tel" id="q_phone" name="phone" placeholder="No. Telefon (contoh: 6012...)" required />
       <input type="email" id="q_email" name="email" placeholder="Emel (pilihan)" />
       <textarea id="q_message" name="message" placeholder="Maklumat ringkas / pertanyaan"></textarea>
 
       <div class="modal-actions">
-        <button type="submit" class="btn primary">Hantar ke WhatsApp</button>
+        <button type="submit" class="btn primary">📩 Hantar ke WhatsApp</button>
         <button type="button" id="modalCancel" class="btn ghost">Batal</button>
       </div>
     </form>
   </div>
 </div>
+
 </body>
 </html>
