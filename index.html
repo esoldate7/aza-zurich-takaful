@@ -77,5 +77,75 @@
     <p id="modalBody"></p>
   </div>
 </div>
+  <!-- ========== SEKSYEN PRODUK ZURICH TAKAFUL ========== -->
+<section class="card" id="produkSection">
+  <h2>💼 Produk Zurich Takaful</h2>
+  <p class="lead">Pilih produk untuk lihat maklumat atau mohon sebut harga</p>
+
+  <div class="produk-grid">
+    <div class="produk-item">
+      <h3>Z-Drive Assist</h3>
+      <button class="btn-info" onclick="showInfo('drive')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Z-Drive Assist')">Sebut Harga</button>
+    </div>
+    <div class="produk-item">
+      <h3>Z-Motor</h3>
+      <button class="btn-info" onclick="showInfo('motor')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Z-Motor')">Sebut Harga</button>
+    </div>
+    <div class="produk-item">
+      <h3>Z-Rider</h3>
+      <button class="btn-info" onclick="showInfo('rider')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Z-Rider')">Sebut Harga</button>
+    </div>
+    <div class="produk-item">
+      <h3>Personal Accident (PA)</h3>
+      <button class="btn-info" onclick="showInfo('pa')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Personal Accident (PA)')">Sebut Harga</button>
+    </div>
+    <div class="produk-item">
+      <h3>Z-Travel</h3>
+      <button class="btn-info" onclick="showInfo('travel')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Z-Travel')">Sebut Harga</button>
+    </div>
+    <div class="produk-item">
+      <h3>Fire Takaful (Business)</h3>
+      <button class="btn-info" onclick="showInfo('fire')">Maklumat</button>
+      <button class="btn-quote" onclick="showQuoteForm('Fire Takaful (Business)')">Sebut Harga</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Info Produk -->
+<div id="produkModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p id="modalBody"></p>
+  </div>
+</div>
+
+<!-- Modal Request Quotation -->
+<div id="quoteModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" onclick="closeQuote()">&times;</span>
+    <h3 id="quoteTitle">Dapatkan Sebut Harga</h3>
+    <form id="quoteForm">
+      <label>Nama Penuh</label>
+      <input type="text" id="quoteName" placeholder="Contoh: Ahmad Zain" required>
+      
+      <label>No. Telefon</label>
+      <input type="tel" id="quotePhone" placeholder="012-3456789" required>
+      
+      <label>Emel</label>
+      <input type="email" id="quoteEmail" placeholder="emel@contoh.com" required>
+      
+      <label>Produk Dipilih</label>
+      <input type="text" id="quoteProduct" readonly>
+
+      <button type="submit" class="btn-submit">Hantar Permohonan</button>
+    </form>
+  </div>
+</div>
 </body>
 </html>
