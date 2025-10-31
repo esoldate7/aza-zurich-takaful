@@ -1,7 +1,7 @@
-// Year update
+// ===== Update Tahun =====
 document.getElementById("year").textContent = new Date().getFullYear();
 
-// ===== Populate Negeri List =====
+// ===== Senarai Negeri =====
 const negeriSelect = document.getElementById("negeriSelect");
 const solatResult = document.getElementById("solatResult");
 const zonNegeri = {
@@ -22,21 +22,29 @@ const zonNegeri = {
   "TRG01": "Terengganu",
   "LBN01": "Labuan"
 };
-for (const [code, name] of Object.entries(zonNegeri)) {
+
+// Populate dropdown
+Object.entries(zonNegeri).forEach(([code, name]) => {
   const opt = document.createElement("option");
   opt.value = code;
   opt.textContent = name;
   negeriSelect.appendChild(opt);
-}
+});
 
-// ===== Fetch Waktu Solat =====
+// ===== Waktu Solat =====
 negeriSelect.addEventListener("change", async () => {
   const zone = negeriSelect.value;
   if (!zone) return;
+
   solatResult.innerHTML = "⏳ Memuatkan waktu solat...";
+
   try {
     const res = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
     const data = await res.json();
+
+    // Safety check
+    if (!data.prayerTime || !data.prayerTime[0]) throw new Error("Tiada data waktu solat");
+
     const time = data.prayerTime[0];
     const html = `
       <ul>
@@ -46,33 +54,41 @@ negeriSelect.addEventListener("change", async () => {
         <li>🌆 Maghrib: <b>${formatTime(time.Maghrib)}</b></li>
         <li>🌃 Isyak: <b>${formatTime(time.Isyak)}</b></li>
       </ul>
-      <p>🗓 ${time.Tarikh} (${data.zoneName})</p>
+      <p>🗓 ${time.Tarikh} (${data.zoneName || zone})</p>
     `;
     solatResult.innerHTML = html;
-  } catch {
+  } catch (err) {
+    console.error(err);
     solatResult.innerHTML = "❌ Gagal memuatkan waktu solat.";
   }
 });
+
 function formatTime(epoch) {
+  if (!epoch) return "-";
   const d = new Date(epoch * 1000);
   return d.toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ===== Cuaca =====
 const cuacaResult = document.getElementById("cuacaResult");
-navigator.geolocation?.getCurrentPosition(async pos => {
-  const { latitude, longitude } = pos.coords;
-  try {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode`);
-    const data = await res.json();
-    const temp = data.current.temperature_2m;
-    cuacaResult.textContent = `🌡️ Suhu: ${temp}°C`;
-  } catch {
-    cuacaResult.textContent = "Tidak dapat memuatkan cuaca.";
-  }
-}, () => cuacaResult.textContent = "❌ Tidak dapat kesan lokasi cuaca.");
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude, longitude } = pos.coords;
+    try {
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode`
+      );
+      const data = await res.json();
+      cuacaResult.textContent = `🌡️ Suhu: ${data.current.temperature_2m}°C`;
+    } catch (e) {
+      cuacaResult.textContent = "❌ Tidak dapat memuatkan cuaca.";
+    }
+  }, () => cuacaResult.textContent = "❌ Tidak dapat kesan lokasi cuaca.");
+} else {
+  cuacaResult.textContent = "Peranti tidak menyokong geolocation.";
+}
 
-// ===== Produk Zurich Info =====
+// ===== Produk Zurich =====
 const produkData = {
   zdrive: {
     nama: "Z-Drive Assist",
@@ -102,27 +118,36 @@ const produkData = {
 
 const modal = document.getElementById("produkModal");
 const modalInfo = document.getElementById("produkInfo");
-document.querySelectorAll(".produk-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const produk = produkData[btn.dataset.produk];
-    modalInfo.innerHTML = `
-      <h3>${produk.nama}</h3>
-      <p>${produk.info}</p>
-      <button class="btn-quote">📄 Request Quotation</button>
-    `;
-    modal.classList.remove("hidden");
+const closeModal = document.getElementById("closeModal");
+
+if (modal && modalInfo && closeModal) {
+  document.querySelectorAll(".produk-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const produk = produkData[btn.dataset.produk];
+      if (!produk) return;
+      modalInfo.innerHTML = `
+        <h3>${produk.nama}</h3>
+        <p>${produk.info}</p>
+        <button class="btn-quote">📄 Request Quotation</button>
+      `;
+      modal.classList.remove("hidden");
+    });
   });
-});
-document.getElementById("closeModal").addEventListener("click", () => modal.classList.add("hidden"));
+
+  closeModal.addEventListener("click", () => modal.classList.add("hidden"));
+}
 
 // ===== Fade-in Animation =====
 (function setupFadeIn() {
-  const cards = document.querySelectorAll(".section-fade");
-  cards.forEach((el, i) => el.style.setProperty("--delay", `${i * 140}ms`));
+  const sections = document.querySelectorAll(".section-fade");
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) e.target.classList.add("visible");
     });
   }, { threshold: 0.1 });
-  cards.forEach(el => io.observe(el));
+
+  sections.forEach((el, i) => {
+    el.style.setProperty("--delay", `${i * 150}ms`);
+    io.observe(el);
+  });
 })();
