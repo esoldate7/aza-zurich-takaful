@@ -1,112 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AZA Zurich Takaful — Waktu Solat & Cuaca</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AZA Zurich Takaful</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <main class="wrap">
-    <header class="topcard">
-      <div class="logo-wrap">
-        <img src="zurich_logo_takaful.png" alt="Zurich Takaful Logo" class="logo" />
-      </div>
+    <!-- Header -->
+    <header class="topcard section-fade">
+      <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="logo" />
       <h1>AZA Zurich Takaful AM</h1>
-      <p class="lead">Waktu Solat & Cuaca — kemas kini setiap hari</p>
+      <p class="lead">Informasi Takaful, Cuaca & Waktu Solat Harian</p>
     </header>
 
-    <section class="card" id="solatCard">
-      <h2>🕌 Waktu Solat</h2>
-      <label for="negeri" class="label">📍 Pilih Negeri</label>
-      <select id="negeri" class="select">
-        <option value="">-- Pilih Negeri --</option>
-      </select>
-      <div id="solatResult" class="result">⏳ Sila pilih negeri atau tunggu lokasi dikesan...</div>
+    <!-- Waktu Solat -->
+    <section id="solatSection" class="card section-fade">
+      <h2>🕌 Waktu Solat Semasa</h2>
+      <select id="negeriSelect" class="select"></select>
+      <div id="solatResult" class="result"></div>
     </section>
 
-    <section class="card" id="cuacaCard">
+    <!-- Cuaca -->
+    <section id="cuacaSection" class="card section-fade">
       <h2>🌤️ Cuaca Semasa</h2>
-      <div id="cuacaResult" class="result">⏳ Memuatkan cuaca semasa...</div>
+      <div id="cuacaResult" class="result">Mengesan lokasi...</div>
     </section>
 
-    <footer class="footer">
+    <!-- Produk Zurich Takaful -->
+    <section id="produkSection" class="card section-fade">
+      <h2>💼 Produk Zurich Takaful</h2>
+      <div class="produk-list">
+        <button class="produk-btn" data-produk="zdrive">🚗 Z-Drive Assist</button>
+        <button class="produk-btn" data-produk="zmotor">🏍️ Z-Motor</button>
+        <button class="produk-btn" data-produk="zrider">🛵 Z-Rider</button>
+        <button class="produk-btn" data-produk="zpa">🧍‍♂️ Personal Accident</button>
+        <button class="produk-btn" data-produk="ztravel">✈️ Z-Travel</button>
+        <button class="produk-btn" data-produk="zfirebiz">🏢 Fire Takaful (Business)</button>
+      </div>
+    </section>
+
+    <!-- Modal info produk -->
+    <div id="produkModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <div id="produkInfo"></div>
+      </div>
+    </div>
+
+    <footer class="footer section-fade">
       © <span id="year"></span> AZA Zurich Takaful AM
     </footer>
   </main>
 
   <script src="script.js"></script>
-  
-
-  <!-- ========== SEKSYEN PRODUK ZURICH TAKAFUL ========== -->
-<section class="card" id="produkSection">
-  <h2>💼 Produk Zurich Takaful</h2>
-  <p class="lead">Pilih produk untuk lihat maklumat atau mohon sebut harga</p>
-
-  <div class="produk-grid">
-    <div class="produk-item">
-      <h3>Z-Drive Assist</h3>
-      <button class="btn-info" onclick="showInfo('drive')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Z-Drive Assist')">Sebut Harga</button>
-    </div>
-    <div class="produk-item">
-      <h3>Z-Motor</h3>
-      <button class="btn-info" onclick="showInfo('motor')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Z-Motor')">Sebut Harga</button>
-    </div>
-    <div class="produk-item">
-      <h3>Z-Rider</h3>
-      <button class="btn-info" onclick="showInfo('rider')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Z-Rider')">Sebut Harga</button>
-    </div>
-    <div class="produk-item">
-      <h3>Personal Accident (PA)</h3>
-      <button class="btn-info" onclick="showInfo('pa')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Personal Accident (PA)')">Sebut Harga</button>
-    </div>
-    <div class="produk-item">
-      <h3>Z-Travel</h3>
-      <button class="btn-info" onclick="showInfo('travel')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Z-Travel')">Sebut Harga</button>
-    </div>
-    <div class="produk-item">
-      <h3>Fire Takaful (Business)</h3>
-      <button class="btn-info" onclick="showInfo('fire')">Maklumat</button>
-      <button class="btn-quote" onclick="showQuoteForm('Fire Takaful (Business)')">Sebut Harga</button>
-    </div>
-  </div>
-</section>
-
-<!-- Modal Info Produk -->
-<div id="produkModal" class="modal hidden">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h3 id="modalTitle"></h3>
-    <p id="modalBody"></p>
-  </div>
-</div>
-
-<!-- Modal Request Quotation -->
-<div id="quoteModal" class="modal hidden">
-  <div class="modal-content">
-    <span class="close" onclick="closeQuote()">&times;</span>
-    <h3 id="quoteTitle">Dapatkan Sebut Harga</h3>
-    <form id="quoteForm">
-      <label>Nama Penuh</label>
-      <input type="text" id="quoteName" placeholder="Contoh: Ahmad Zain" required>
-      
-      <label>No. Telefon</label>
-      <input type="tel" id="quotePhone" placeholder="012-3456789" required>
-      
-      <label>Emel</label>
-      <input type="email" id="quoteEmail" placeholder="emel@contoh.com" required>
-      
-      <label>Produk Dipilih</label>
-      <input type="text" id="quoteProduct" readonly>
-
-      <button type="submit" class="btn-submit">Hantar Permohonan</button>
-    </form>
-  </div>
-</div>
 </body>
 </html>
