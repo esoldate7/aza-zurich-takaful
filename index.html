@@ -1,60 +1,251 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AZA Zurich Takaful</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zurich Takaful Info App</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(180deg, #0d47a1, #1976d2);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    select, button, input, textarea {
+      padding: 10px 15px;
+      margin: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    select {
+      background: white;
+      color: #0d47a1;
+    }
+    #solatResult, #cuacaResult {
+      margin: 15px auto;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 10px;
+      width: 90%;
+    }
+    .produk-section {
+      margin-top: 30px;
+      padding: 10px;
+    }
+    .produk-btn {
+      display: block;
+      background: white;
+      color: #0d47a1;
+      border-radius: 10px;
+      margin: 10px auto;
+      padding: 12px;
+      width: 90%;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .produk-btn:hover {
+      background: #bbdefb;
+      transform: scale(1.03);
+    }
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.3s;
+      z-index: 1000;
+    }
+    .modal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal-content {
+      background: white;
+      color: #0d47a1;
+      border-radius: 15px;
+      padding: 20px;
+      width: 90%;
+      max-width: 420px;
+      text-align: left;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .close {
+      float: right;
+      font-weight: bold;
+      cursor: pointer;
+      color: #1976d2;
+    }
+    .close:hover {
+      color: red;
+    }
+    #quoteForm {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+    #quoteForm input, #quoteForm textarea {
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 15px;
+      width: 100%;
+    }
+    #quoteForm button {
+      background: #1976d2;
+      color: white;
+      font-weight: bold;
+    }
+    #quoteForm button:hover {
+      background: #0d47a1;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
 </head>
-
 <body>
-  <main class="wrap">
-    <!-- Header -->
-    <header class="topcard section-fade">
-      <img src="zurich_logo_takaful.png" alt="Zurich Logo" class="logo" />
-      <h1>AZA Zurich Takaful AM</h1>
-      <p class="lead">Informasi Takaful, Cuaca & Waktu Solat Harian</p>
-    </header>
+  <h1>🕌 Waktu Solat & Cuaca</h1>
+  <select id="negeriSelect">
+    <option value="">-- Pilih Negeri --</option>
+  </select>
+  <div id="solatResult">Sila pilih negeri untuk lihat waktu solat.</div>
+  <div id="cuacaResult">Memuatkan cuaca...</div>
 
-    <!-- Waktu Solat -->
-    <section id="solatSection" class="card section-fade">
-      <h2>🕌 Waktu Solat Semasa</h2>
-      <select id="negeriSelect" class="select"></select>
-      <div id="solatResult" class="result"></div>
-    </section>
+  <div class="produk-section">
+    <h2>💼 Produk Zurich Takaful</h2>
+    <button class="produk-btn" data-produk="zdrive">Z-Drive Assist</button>
+    <button class="produk-btn" data-produk="zmotor">Z-Motor</button>
+    <button class="produk-btn" data-produk="zrider">Z-Rider</button>
+    <button class="produk-btn" data-produk="zpa">Personal Accident</button>
+    <button class="produk-btn" data-produk="ztravel">Z-Travel</button>
+    <button class="produk-btn" data-produk="zfirebiz">Fire Takaful (Business)</button>
+  </div>
 
-    <!-- Cuaca -->
-    <section id="cuacaSection" class="card section-fade">
-      <h2>🌤️ Cuaca Semasa</h2>
-      <div id="cuacaResult" class="result">Mengesan lokasi...</div>
-    </section>
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <div id="produkInfo"></div>
 
-    <!-- Produk Zurich Takaful -->
-    <section id="produkSection" class="card section-fade">
-      <h2>💼 Produk Zurich Takaful</h2>
-      <div class="produk-list">
-        <button class="produk-btn" data-produk="zdrive">🚗 Z-Drive Assist</button>
-        <button class="produk-btn" data-produk="zmotor">🏍️ Z-Motor</button>
-        <button class="produk-btn" data-produk="zrider">🛵 Z-Rider</button>
-        <button class="produk-btn" data-produk="zpa">🧍‍♂️ Personal Accident</button>
-        <button class="produk-btn" data-produk="ztravel">✈️ Z-Travel</button>
-        <button class="produk-btn" data-produk="zfirebiz">🏢 Fire Takaful (Business)</button>
-      </div>
-    </section>
-
-    <!-- Modal info produk -->
-    <div id="produkModal" class="modal hidden">
-      <div class="modal-content">
-        <span id="closeModal">&times;</span>
-        <div id="produkInfo"></div>
-      </div>
+      <form id="quoteForm">
+        <h4>📄 Request Quotation</h4>
+        <input type="text" id="nama" placeholder="Nama penuh" required />
+        <input type="tel" id="telefon" placeholder="No. Telefon" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <textarea id="mesej" placeholder="Mesej tambahan (optional)" rows="3"></textarea>
+        <button type="submit">Hantar Permohonan</button>
+      </form>
     </div>
+  </div>
 
-    <footer class="footer section-fade">
-      © <span id="year"></span> AZA Zurich Takaful AM
-    </footer>
-  </main>
+  <footer>© <span id="year"></span> BroChat x Zurich</footer>
 
-  <script src="script.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Negeri list
+    const negeriList = {
+      "WLY01": "Kuala Lumpur", "SGR01": "Selangor", "JHR01": "Johor",
+      "KDH01": "Kedah", "KTN01": "Kelantan", "MLK01": "Melaka",
+      "NSN01": "Negeri Sembilan", "PHG01": "Pahang", "PRK01": "Perak",
+      "PLS01": "Perlis", "PNG01": "Pulau Pinang", "SBH01": "Sabah",
+      "SWK01": "Sarawak", "TRG01": "Terengganu", "LBN01": "Labuan"
+    };
+    const negeriSelect = document.getElementById("negeriSelect");
+    Object.entries(negeriList).forEach(([code, name])=>{
+      const opt = document.createElement("option");
+      opt.value = code; opt.textContent = name;
+      negeriSelect.appendChild(opt);
+    });
+
+    // Waktu solat
+    negeriSelect.addEventListener("change", async ()=>{
+      const zone = negeriSelect.value;
+      if(!zone) return;
+      const result = document.getElementById("solatResult");
+      result.textContent = "⏳ Memuatkan...";
+      try {
+        const res = await fetch(`https://api.waktusolat.app/v2/solat/${zone}`);
+        const data = await res.json();
+        const d = data.prayerTime[0];
+        result.innerHTML = `
+          🌅 Subuh: <b>${d.Subuh}</b><br>
+          ☀️ Zohor: <b>${d.Zohor}</b><br>
+          🌇 Asar: <b>${d.Asar}</b><br>
+          🌆 Maghrib: <b>${d.Maghrib}</b><br>
+          🌃 Isyak: <b>${d.Isyak}</b><br>
+          📅 ${d.Tarikh}
+        `;
+      } catch {
+        result.textContent = "❌ Gagal memuatkan waktu solat.";
+      }
+    });
+
+    // Cuaca
+    const cuacaDiv = document.getElementById("cuacaResult");
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(async(pos)=>{
+        const {latitude, longitude} = pos.coords;
+        try {
+          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`);
+          const data = await res.json();
+          cuacaDiv.textContent = `🌡️ Suhu semasa: ${data.current.temperature_2m}°C`;
+        } catch {
+          cuacaDiv.textContent = "❌ Tidak dapat muatkan cuaca.";
+        }
+      }, ()=> cuacaDiv.textContent="📍 Sila pilih negeri untuk lihat cuaca.");
+    } else {
+      cuacaDiv.textContent = "Peranti tidak sokong lokasi.";
+    }
+
+    // Produk Zurich Info
+    const produk = {
+      zdrive: "Perlindungan komprehensif bagi kenderaan termasuk bantuan tepi jalan & towing.",
+      zmotor: "Perlindungan menyeluruh untuk kereta daripada kemalangan, kebakaran, kecurian.",
+      zrider: "Takaful khas untuk penunggang motosikal dengan perlindungan kemalangan diri.",
+      zpa: "Perlindungan 24 jam terhadap kemalangan diri & kecederaan tidak dijangka.",
+      ztravel: "Perlindungan perjalanan termasuk kelewatan penerbangan & kecemasan perubatan.",
+      zfirebiz: "Lindungi premis perniagaan daripada risiko kebakaran & bencana."
+    };
+
+    const modal = document.getElementById("modal");
+    const info = document.getElementById("produkInfo");
+    const closeModal = document.getElementById("closeModal");
+    const form = document.getElementById("quoteForm");
+
+    document.querySelectorAll(".produk-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.produk;
+        info.innerHTML = `<h3>${btn.textContent}</h3><p>${produk[id]}</p>`;
+        modal.classList.add("show");
+      });
+    });
+
+    closeModal.onclick = ()=> modal.classList.remove("show");
+
+    form.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const nama = document.getElementById("nama").value;
+      const telefon = document.getElementById("telefon").value;
+      const email = document.getElementById("email").value;
+      alert(`Terima kasih ${nama}! Kami akan hubungi anda di ${telefon} / ${email} secepat mungkin.`);
+      modal.classList.remove("show");
+      form.reset();
+    });
+  </script>
 </body>
 </html>
