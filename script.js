@@ -217,3 +217,107 @@ if (modal && modalInfo && closeModal) {
       startBtn.textContent = "Ulang Kuiz 🔁";
       startBtn.style.display = "block";
     }
+// =============================
+// 🎯 FUNGSI KUiz ZURICH TAKAFUL
+// =============================
+document.addEventListener("DOMContentLoaded", () => {
+  const quizData = [
+    {
+      question: "Apakah tujuan utama takaful?",
+      options: [
+        "Perlindungan bersama berdasarkan tolong-menolong",
+        "Untuk keuntungan individu semata-mata",
+        "Sistem insurans konvensional",
+        "Pelaburan jangka pendek"
+      ],
+      answer: 0
+    },
+    {
+      question: "Apakah maksud 'Tabarru’' dalam takaful?",
+      options: [
+        "Sumbangan ikhlas ke dalam dana bersama",
+        "Pembayaran balik pinjaman",
+        "Bonus tahunan",
+        "Faedah pelaburan"
+      ],
+      answer: 0
+    },
+    {
+      question: "Produk Zurich manakah yang melindungi kenderaan anda?",
+      options: [
+        "Z-Rider",
+        "Z-Drive Assist",
+        "Z-Travel",
+        "Fire Takaful"
+      ],
+      answer: 1
+    },
+    {
+      question: "Z-Travel sesuai untuk apa?",
+      options: [
+        "Melindungi percutian dan perjalanan anda",
+        "Melindungi rumah daripada kebakaran",
+        "Memberi elaun hospital",
+        "Untuk pelan pendidikan anak"
+      ],
+      answer: 0
+    }
+  ];
+
+  const startBtn = document.getElementById("startQuiz");
+  const questionBox = document.getElementById("quizQuestion");
+  const optionsBox = document.getElementById("quizOptions");
+
+  let current = 0;
+  let score = 0;
+
+  startBtn.addEventListener("click", startQuiz);
+
+  function startQuiz() {
+    startBtn.style.display = "none";
+    showQuestion();
+  }
+
+  function showQuestion() {
+    const q = quizData[current];
+    questionBox.textContent = q.question;
+    optionsBox.innerHTML = "";
+
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(i);
+      optionsBox.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(i) {
+    const correct = quizData[current].answer;
+    if (i === correct) {
+      score++;
+    }
+
+    current++;
+    if (current < quizData.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    questionBox.innerHTML = `✅ Kuiz Tamat!<br>Markah Anda: <b>${score}/${quizData.length}</b>`;
+    optionsBox.innerHTML = "";
+    const restart = document.createElement("button");
+    restart.textContent = "Ulang Kuiz 🔁";
+    restart.className = "btn";
+    restart.onclick = restartQuiz;
+    optionsBox.appendChild(restart);
+  }
+
+  function restartQuiz() {
+    current = 0;
+    score = 0;
+    startQuiz();
+  }
+});
