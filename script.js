@@ -151,3 +151,69 @@ if (modal && modalInfo && closeModal) {
     io.observe(el);
   });
 })();
+// ============================
+    // 🎯 Kuiz Zurich Takaful
+    // ============================
+    const quizData = [
+      {
+        q: "Apakah tujuan utama takaful?",
+        o: ["Untuk pelaburan cepat", "Perlindungan kewangan berasaskan perkongsian risiko", "Pinjaman tanpa faedah", "Insurans konvensional"],
+        a: 1
+      },
+      {
+        q: "Z-Drive Assist memberi perlindungan kepada…",
+        o: ["Kenderaan & bantuan jalan raya", "Rumah & isi rumah", "Kesihatan peribadi", "Perniagaan kecil"],
+        a: 0
+      },
+      {
+        q: "Siapa yang boleh menyertai pelan takaful?",
+        o: ["Hanya syarikat", "Hanya warga asing", "Sesiapa sahaja yang ingin perlindungan halal", "Orang berpendapatan tinggi sahaja"],
+        a: 2
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+
+    const quizBox = document.getElementById("quizBox");
+    const quizQuestion = document.getElementById("quizQuestion");
+    const quizOptions = document.getElementById("quizOptions");
+    const startBtn = document.getElementById("startQuiz");
+
+    startBtn.addEventListener("click", startQuiz);
+
+    function startQuiz() {
+      currentQ = 0;
+      score = 0;
+      startBtn.style.display = "none";
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = quizData[currentQ];
+      quizQuestion.textContent = q.q;
+      quizOptions.innerHTML = "";
+      q.o.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(i);
+        quizOptions.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(choice) {
+      if (choice === quizData[currentQ].a) score++;
+      currentQ++;
+      if (currentQ < quizData.length) {
+        loadQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+
+    function endQuiz() {
+      quizQuestion.innerHTML = `✅ Selesai!<br>Markah anda: <b>${score}/${quizData.length}</b>`;
+      quizOptions.innerHTML = "";
+      startBtn.textContent = "Ulang Kuiz 🔁";
+      startBtn.style.display = "block";
+    }
