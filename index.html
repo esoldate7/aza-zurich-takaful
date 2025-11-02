@@ -28,7 +28,7 @@
       background: white;
       color: #0d47a1;
     }
-    #solatResult, #cuacaResult {
+    #solatBox, #cuacaBox {
       margin: 15px auto;
       background: rgba(255,255,255,0.1);
       border-radius: 12px;
@@ -120,15 +120,14 @@
 </head>
 <body>
   <h1>🕌 Waktu Solat & Cuaca</h1>
+
   <select id="negeriSelect">
     <option value="">-- Pilih Negeri --</option>
   </select>
-  <div id="solatResult">Sila pilih negeri untuk lihat waktu solat.</div>
-  <div id="cuacaResult">Memuatkan cuaca...</div>
-  
-<div id="solatResult" class="solat-box"></div>
-<div id="cuacaBox" class="cuaca-box"></div>
-  
+
+  <div id="solatBox">Sila pilih negeri untuk lihat waktu solat.</div>
+  <div id="cuacaBox">Memuatkan cuaca...</div>
+
   <div class="produk-section">
     <h2>💼 Produk Zurich Takaful</h2>
     <button class="produk-btn" data-produk="zdrive">Z-Drive Assist</button>
@@ -137,22 +136,9 @@
     <button class="produk-btn" data-produk="zpa">Personal Accident</button>
     <button class="produk-btn" data-produk="ztravel">Z-Travel</button>
     <button class="produk-btn" data-produk="zfirebiz">Fire Takaful (Business)</button>
-  </div> 
-  <!-- =========================
-🎯 SEKSYEN KUiz ZURICH TAKAFUL
-========================= -->
-<section id="quizSection" class="card">
-  <div class="card-header">
-    <h2>🎯 Kuiz Zurich Takaful</h2>
   </div>
 
-  <div id="quizBox" class="quiz-box">
-    <p id="quizQuestion" class="quiz-question">Uji pengetahuan anda tentang takaful!</p>
-    <div id="quizOptions" class="quiz-options"></div>
-    <button id="startQuiz" class="btn">Mula Kuiz</button>
-  </div>
-</section>
-
+  <!-- Modal Info Produk -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <span class="close" id="closeModal">&times;</span>
@@ -166,170 +152,20 @@
         <textarea id="mesej" placeholder="Mesej tambahan (optional)" rows="3"></textarea>
         <button type="submit">Hantar Permohonan</button>
       </form>
+    </div>
   </div>
-  </div>
+
+  <section id="quizSection">
+    <h2>🎯 Kuiz Zurich Takaful</h2>
+    <div id="quizBox">
+      <p id="quizQuestion">Uji pengetahuan anda tentang takaful!</p>
+      <div id="quizOptions"></div>
+      <button id="startQuiz" class="produk-btn">Mula Kuiz</button>
+    </div>
+  </section>
 
   <footer>© <span id="year"></span> BroChat AzA Takaful Zurich</footer>
 
-<script>
-// ======================
-// 📅 SENARAI NEGERI
-// ======================
-const negeriList = {
-  "WLY01": { name: "Kuala Lumpur", lat: 3.139, lon: 101.6869 },
-  "SGR01": { name: "Selangor", lat: 3.0738, lon: 101.5183 },
-  "JHR01": { name: "Johor", lat: 1.4927, lon: 103.7414 },
-  "KDH01": { name: "Kedah", lat: 6.1184, lon: 100.3685 },
-  "KTN01": { name: "Kelantan", lat: 6.1254, lon: 102.2381 },
-  "MLK01": { name: "Melaka", lat: 2.1896, lon: 102.2501 },
-  "NSN01": { name: "Negeri Sembilan", lat: 2.7258, lon: 101.9424 },
-  "PHG01": { name: "Pahang", lat: 3.8126, lon: 103.3256 },
-  "PRK01": { name: "Perak", lat: 4.5921, lon: 101.0901 },
-  "PLS01": { name: "Perlis", lat: 6.4433, lon: 100.2048 },
-  "PNG01": { name: "Pulau Pinang", lat: 5.4164, lon: 100.3327 },
-  "SBH01": { name: "Sabah", lat: 5.9788, lon: 116.0753 },
-  "SWK01": { name: "Sarawak", lat: 1.5533, lon: 110.3592 },
-  "TRG01": { name: "Terengganu", lat: 5.3292, lon: 103.137 },
-  "LBN01": { name: "Labuan", lat: 5.2831, lon: 115.2308 }
-};
-
-const negeriSelect = document.getElementById("negeriSelect");
-Object.entries(negeriList).forEach(([code, info])=>{
-  const opt = document.createElement("option");
-  opt.value = code;
-  opt.textContent = info.name;
-  negeriSelect.appendChild(opt);
-});
-
-// ======================
-// 🕌 WAKTU SOLAT + ☁️ CUACA
-// ======================
-negeriSelect.addEventListener("change", async ()=>{
-  const zone = negeriSelect.value;
-  const result = document.getElementById("solatResult");
-  const cuacaBox = document.getElementById("cuacaBox");
-
-  if(!zone) return;
-  const { lat, lon, name } = negeriList[zone];
-
-  result.textContent = "⏳ Memuatkan waktu solat...";
-  cuacaBox.textContent = "⏳ Memuatkan cuaca semasa...";
-
-  // 🕌 Waktu Solat
-  try {
-    const res = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
-    const data = await res.json();
-    const d = data.prayerTime[0];
-    result.innerHTML = `
-      <b>📍 ${name}</b><br>
-      🌅 Subuh: <b>${d.fajr}</b><br>
-      ☀️ Zohor: <b>${d.dhuhr}</b><br>
-      🌇 Asar: <b>${d.asr}</b><br>
-      🌆 Maghrib: <b>${d.maghrib}</b><br>
-      🌃 Isyak: <b>${d.isha}</b><br>
-      📅 ${d.date}
-    `;
-  } catch (err) {
-    console.error(err);
-    result.textContent = "❌ Gagal memuatkan waktu solat (API eSolat).";
-  }
-
-  // 🌤️ Cuaca (Open-Meteo)
-  try {
-    const cuacaRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,precipitation`);
-    const cuaca = await cuacaRes.json();
-    const c = cuaca.current;
-    const weatherDesc = weatherIcon(c.weather_code);
-    cuacaBox.innerHTML = `
-      ${weatherDesc.icon} <b>${weatherDesc.text}</b><br>
-      🌡️ Suhu: <b>${c.temperature_2m}°C</b><br>
-      💨 Angin: <b>${c.wind_speed_10m} km/j</b><br>
-      🌧️ Hujan: <b>${c.precipitation} mm</b><br>
-      🕓 Dikemaskini: ${new Date(c.time).toLocaleTimeString('ms-MY')}
-    `;
-  } catch (err) {
-    console.error(err);
-    cuacaBox.textContent = "❌ Gagal memuatkan data cuaca.";
-  }
-});
-
-// 🔣 Fungsi ikon cuaca
-function weatherIcon(code) {
-  const w = {
-    0: ["☀️", "Cerah"],
-    1: ["🌤️", "Sedikit berawan"],
-    2: ["⛅", "Berawan"],
-    3: ["☁️", "Mendung"],
-    45: ["🌫️", "Berkabus"],
-    48: ["🌫️", "Berkabus tebal"],
-    51: ["🌦️", "Gerimis ringan"],
-    61: ["🌧️", "Hujan sederhana"],
-    63: ["🌧️", "Hujan lebat"],
-    71: ["❄️", "Salji ringan (rare)"],
-    95: ["⛈️", "Ribut petir"]
-  };
-  return { icon: w[code]?.[0] || "🌡️", text: w[code]?.[1] || "Cuaca tidak diketahui" };
-}
-
-// ======================
-// 🎯 KUIZ TAKAFUL
-// ======================
-const quizData = [
-  { question: "Apakah perlindungan utama Z-Motor?", options: ["Kemalangan, kebakaran & kecurian", "Hanya kemalangan kecil", "Cermin depan sahaja", "Servis tahunan percuma"], answer: 0 },
-  { question: "Z-Rider sesuai untuk siapa?", options: ["Penunggang motosikal", "Pemilik lori", "Pemilik rumah", "Peniaga restoran"], answer: 0 },
-  { question: "Z-Drive Assist menawarkan bantuan apa?", options: ["Bantuan tepi jalan & towing", "Takaful nyawa", "Diskaun servis tayar", "Insurans rumah"], answer: 0 },
-  { question: "Skuter boleh dilindungi di bawah produk mana?", options: ["Z-Rider", "Z-Drive Assist", "Z-Travel", "Z-FireBiz"], answer: 0 }
-];
-
-let currentQuiz = 0;
-let score = 0;
-
-const quizBox = document.getElementById("quizBox");
-const quizQuestion = document.getElementById("quizQuestion");
-const quizOptions = document.getElementById("quizOptions");
-const startBtn = document.getElementById("startQuiz");
-
-function loadQuiz() {
-  const q = quizData[currentQuiz];
-  quizQuestion.textContent = q.question;
-  quizOptions.innerHTML = "";
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = opt;
-    btn.className = "produk-btn";
-    btn.onclick = () => checkAnswer(i);
-    quizOptions.appendChild(btn);
-  });
-}
-
-function checkAnswer(selected) {
-  if (selected === quizData[currentQuiz].answer) score++;
-  currentQuiz++;
-  if (currentQuiz < quizData.length) loadQuiz();
-  else quizBox.innerHTML = `
-    <h3>🎉 Kuiz Tamat!</h3>
-    <p>Skor anda: <b>${score}/${quizData.length}</b></p>
-    <button class="produk-btn" onclick="restartQuiz()">Main Semula</button>
-  `;
-}
-
-function restartQuiz() {
-  currentQuiz = 0; score = 0;
-  quizBox.innerHTML = `
-    <p id="quizQuestion" class="quiz-question">Uji pengetahuan anda tentang takaful!</p>
-    <div id="quizOptions" class="quiz-options"></div>
-    <button id="startQuiz" class="btn">Mula Kuiz</button>
-  `;
-  document.getElementById("startQuiz").addEventListener("click", startQuiz);
-}
-
-function startQuiz() {
-  startBtn.style.display = "none";
-  loadQuiz();
-}
-
-startBtn.addEventListener("click", startQuiz);
-</script>
-    
+  <script src="script.js"></script>
 </body>
 </html>
