@@ -272,6 +272,473 @@ document.getElementById("quoteForm").addEventListener("submit",e=>{
   window.open(whatsapp,"_blank");
 });
 document.getElementById("year").textContent=new Date().getFullYear();
+  
 </script>
+<!-- ========== FRUIT SLICE FULLSCREEN MODAL (COPY-PASTE BELOW INTO index.html) ========== -->
+<style>
+  /* Modal & game styles */
+  #fruitModal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(2,18,78,0.95), rgba(3,54,120,0.95));
+    z-index: 2000;
+  }
+  #fruitModal.show { display: flex; }
+
+  .fruit-game-wrap {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    align-items: stretch;
+  }
+
+  .fruit-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 18px;
+    color: white;
+    font-weight:700;
+    gap:10px;
+  }
+  .fruit-top .title { font-size:18px; }
+  .fruit-top .score { font-size:16px; background: rgba(255,255,255,0.08); padding:8px 12px; border-radius:10px; }
+
+  #fruitCanvas {
+    width: 100%;
+    height: calc(100vh - 120px);
+    display:block;
+    touch-action: none;
+    background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.02), transparent 10%), rgba(0,0,0,0);
+  }
+
+  .fruit-bottom {
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    padding:12px;
+  }
+  .fg-btn {
+    background: white; color:#0d47a1; border:none; padding:10px 16px; border-radius:10px; font-weight:700;
+  }
+
+  /* Game over overlay */
+  .fg-overlay {
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 12px;
+    text-align:center;
+    display:none;
+    z-index: 2010;
+  }
+  .fg-overlay.show { display:block; }
+  .fg-overlay h2 { margin: 0 0 8px 0; font-size:20px; }
+  .fg-overlay p { margin:0 0 12px 0; opacity:0.9; }
+</style>
+
+<!-- Button to open game (place anywhere) -->
+<button id="openFruitGame" class="produk-btn">🎮 Main Fruit Slice</button>
+
+<!-- Modal -->
+<div id="fruitModal" aria-hidden="true">
+  <div class="fruit-game-wrap">
+    <div class="fruit-top">
+      <div class="title">🍉 Fruit Slice Mini — BroChat</div>
+      <div class="score">Skor: <span id="fgScore">0</span></div>
+    </div>
+
+    <canvas id="fruitCanvas"></canvas>
+
+    <div class="fruit-bottom">
+      <button id="fgPause" class="fg-btn">⏸️ Jeda</button>
+      <button id="fgRestart" class="fg-btn">🔁 Restart</button>
+      <button id="fgClose" class="fg-btn">✖ Tutup</button>
+    </div>
+
+    <div id="fgOverlay" class="fg-overlay" role="dialog" aria-hidden="true">
+      <h2 id="fgOverlayTitle">Game Over</h2>
+      <p id="fgOverlayMsg">Skor anda: <strong id="fgFinalScore">0</strong></p>
+      <button id="fgOverlayRestart" class="fg-btn">Main Semula</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Fruit Slice Game - Fullscreen Modal
+   - Touch & mouse slicing
+   - Fruits spawn randomly, bombs cause game over
+   - Lightweight physics, no external libs
+*/
+
+// ---- Helpers ----
+const rand = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+// ---- DOM refs ----
+const openBtn = document.getElementById('openFruitGame');
+const modal = document.getElementById('fruitModal');
+const canvas = document.getElementById('fruitCanvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+const scoreEl = document.getElementById('fgScore');
+const pauseBtn = document.getElementById('fgPause');
+const restartBtn = document.getElementById('fgRestart');
+const closeBtn = document.getElementById('fgClose');
+const overlay = document.getElementById('fgOverlay');
+const overlayScore = document.getElementById('fgFinalScore');
+const overlayRestart = document.getElementById('fgOverlayRestart');
+
+// ---- Game state ----
+let W=0,H=0, DPR = window.devicePixelRatio || 1;
+let fruits = [];
+let particles = [];
+let slicePath = [];
+let isRunning = false;
+let isPaused = false;
+let score = 0;
+let spawnTimer = 0;
+let spawnInterval = 900; // ms base
+let lastTime = 0;
+
+// Fruit types
+const FRUIT_TYPES = [
+  { name:'apple', color:'#ff5252', points:10, radius:28 },
+  { name:'orange', color:'#ff9800', points:12, radius:30 },
+  { name:'watermelon', color:'#4caf50', points:18, radius:36 },
+  { name:'lemon', color:'#ffeb3b', points:9, radius:26 }
+];
+const BOMB = { name:'bomb', color:'#333', points:0, radius:28 };
+
+// ---- Resize ----
+function resizeCanvas(){
+  DPR = window.devicePixelRatio || 1;
+  W = canvas.clientWidth;
+  H = canvas.clientHeight;
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize', resizeCanvas);
+
+// ---- Entities ----
+function spawnFruit(){
+  const chanceBomb = Math.random() < 0.08; // 8% bombs
+  const x = rand(60, W-60);
+  const speedY = rand(220, 360) / 1000; // px/ms initial velocity scale
+  const vx = rand(-60,60) / 1000;
+  if(chanceBomb){
+    fruits.push({
+      type:BOMB,
+      x, y: H + 60,
+      vx, vy: -rand(650, 900),
+      r: BOMB.radius,
+      exploded:false
+    });
+  } else {
+    const t = FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
+    fruits.push({
+      type:t,
+      x, y: H + 60,
+      vx, vy: -rand(600, 900),
+      r: t.radius,
+      cut:false
+    });
+  }
+}
+
+// ---- Particles for sliced fruits ----
+function spawnParticles(x,y,color){
+  for(let i=0;i<12;i++){
+    particles.push({
+      x, y,
+      vx: rand(-200,200)/1000,
+      vy: rand(-200,0)/1000,
+      life: rand(600,1200),
+      t: 0,
+      color
+    });
+  }
+}
+
+// ---- Drawing ----
+function drawFruit(f){
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  // shadow
+  ctx.beginPath();
+  ctx.arc(6, 6, f.r+4, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fill();
+
+  // main circle
+  ctx.beginPath();
+  ctx.arc(0,0,f.r,0,Math.PI*2);
+  ctx.fillStyle = f.type.color;
+  ctx.fill();
+
+  // highlight
+  ctx.beginPath();
+  ctx.ellipse(-f.r*0.3, -f.r*0.35, f.r*0.3, f.r*0.18, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fill();
+
+  // small seed or icon for watermelon
+  if(f.type.name === 'watermelon'){
+    ctx.beginPath();
+    ctx.fillStyle = '#2e7d32';
+    for(let i=0;i<6;i++){
+      ctx.fillRect(-f.r*0.6 + i*6, -4, 3, 8);
+    }
+  }
+  // bomb mark
+  if(f.type.name === 'bomb'){
+    ctx.beginPath();
+    ctx.fillStyle = '#111';
+    ctx.arc(0,0,f.r*0.55,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('💣',0,0);
+  }
+  ctx.restore();
+}
+
+function drawParticles(dt){
+  for(const p of particles){
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4,0,Math.PI*2);
+    ctx.fillStyle = p.color || 'rgba(255,255,255,0.9)';
+    ctx.fill();
+  }
+}
+
+// ---- Physics & update ----
+function updateEntities(dt){
+  // fruits
+  for(const f of fruits){
+    // apply gravity
+    f.vy += 1600 * (dt/1000); // px/s^2 scaled
+    f.x += f.vx * dt;
+    f.y += f.vy * dt;
+  }
+  // particles
+  for(const p of particles){
+    p.vy += 1200 * (dt/1000);
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.t += dt;
+  }
+  // remove dead particles
+  particles = particles.filter(p => p.t < p.life);
+
+  // remove fruits that fell below screen
+  fruits = fruits.filter(f => {
+    if(f.y - f.r > H + 80){
+      // if fruit not cut, it's missed - subtract small penalty or ignore
+      return false;
+    }
+    return true;
+  });
+}
+
+// ---- Slice detection ----
+function pointCircleIntersect(px, py, cx, cy, r){
+  const dx = px - cx;
+  const dy = py - cy;
+  return (dx*dx + dy*dy) <= (r*r);
+}
+
+function checkSliceCollision(){
+  if(slicePath.length < 2) return;
+  // reduce path to last few points for performance
+  const path = slicePath.slice(-6);
+  for(const f of fruits){
+    if(f.cut || f.type.name === 'bomb' && f.exploded) continue;
+    // check any segment intersects circle (approx by testing segment midpoint)
+    for(let i=1;i<path.length;i++){
+      const x1 = path[i-1].x, y1 = path[i-1].y;
+      const x2 = path[i].x, y2 = path[i].y;
+      // sample a few points along segment
+      for(let t=0;t<=1;t+=0.25){
+        const sx = x1 + (x2-x1)*t;
+        const sy = y1 + (y2-y1)*t;
+        if(pointCircleIntersect(sx, sy, f.x, f.y, f.r)){
+          // hit
+          if(f.type.name === 'bomb'){
+            // bomb explode -> game over
+            endGame(true);
+            f.exploded = true;
+            return;
+          } else {
+            if(!f.cut){
+              f.cut = true;
+              score += f.type.points;
+              scoreEl.textContent = score;
+              spawnParticles(f.x, f.y, f.type.color);
+            }
+          }
+        }
+      }
+    }
+  }
+  // remove cut fruits (but let particles display)
+  fruits = fruits.filter(f => !(f.cut));
+}
+
+// ---- Render loop ----
+function render(time){
+  if(!isRunning) return;
+  const dt = Math.min(40, time - lastTime);
+  lastTime = time;
+
+  if(!isPaused){
+    // update spawn timer
+    spawnTimer += dt;
+    if(spawnTimer > spawnInterval){
+      spawnTimer = 0;
+      spawnInterval = rand(600, 1100); // vary spawn rate
+      spawnFruit();
+    }
+    updateEntities(dt);
+    checkSliceCollision();
+  }
+
+  // clear
+  ctx.clearRect(0,0,W,H);
+
+  // draw fruits
+  for(const f of fruits) drawFruit(f);
+
+  // draw particles
+  drawParticles(dt);
+
+  // draw slice path
+  if(slicePath.length){
+    ctx.beginPath();
+    ctx.moveTo(slicePath[0].x, slicePath[0].y);
+    for(let i=1;i<slicePath.length;i++) ctx.lineTo(slicePath[i].x, slicePath[i].y);
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ---- Input handling (touch & mouse) ----
+let drawing = false;
+function addSlicePoint(x,y){
+  slicePath.push({x,y, t: Date.now()});
+  // keep path short
+  if(slicePath.length > 20) slicePath.shift();
+}
+function startDrawing(x,y){
+  drawing = true;
+  slicePath = [{x,y, t:Date.now()}];
+  addSlicePoint(x,y);
+}
+function stopDrawing(){
+  drawing = false;
+  // fade slice
+  setTimeout(()=> slicePath = [], 120);
+}
+function handlePointerMove(x,y){
+  if(!drawing) return;
+  addSlicePoint(x,y);
+}
+
+// mouse
+canvas.addEventListener('mousedown', e=>{
+  startDrawing(e.offsetX, e.offsetY);
+});
+canvas.addEventListener('mousemove', e=>{
+  handlePointerMove(e.offsetX, e.offsetY);
+});
+window.addEventListener('mouseup', e=> stopDrawing());
+
+// touch
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  startDrawing(t.clientX - rect.left, t.clientY - rect.top);
+});
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const t = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  handlePointerMove(t.clientX - rect.left, t.clientY - rect.top);
+});
+canvas.addEventListener('touchend', e=>{
+  e.preventDefault();
+  stopDrawing();
+});
+
+// ---- Game control ----
+function startGame(){
+  // reset
+  fruits = []; particles = []; slicePath = [];
+  score = 0; scoreEl.textContent = score;
+  spawnTimer = 0; spawnInterval = 900;
+  isRunning = true; isPaused = false;
+  overlay.classList.remove('show');
+  lastTime = performance.now();
+  requestAnimationFrame(render);
+}
+function pauseGame(){
+  isPaused = !isPaused;
+  pauseBtn.textContent = isPaused ? '▶️ Main' : '⏸️ Jeda';
+}
+function endGame(isBomb=false){
+  isRunning = false;
+  overlayScore.textContent = score;
+  document.getElementById('fgOverlayTitle').textContent = isBomb ? 'Boom! Game Over 💥' : 'Game Over';
+  overlay.classList.add('show');
+}
+
+// ---- UI bindings ----
+openBtn.addEventListener('click', ()=>{
+  modal.classList.add('show');
+  resizeCanvas();
+  startGame();
+});
+
+closeBtn.addEventListener('click', ()=>{
+  modal.classList.remove('show');
+  isRunning = false;
+});
+restartBtn.addEventListener('click', ()=> {
+  startGame();
+});
+pauseBtn.addEventListener('click', pauseGame);
+overlayRestart.addEventListener('click', ()=> {
+  overlay.classList.remove('show');
+  startGame();
+});
+
+// Init canvas size on open
+resizeCanvas();
+
+// Accessibility: close modal with Esc
+window.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && modal.classList.contains('show')){
+    modal.classList.remove('show');
+    isRunning = false;
+  }
+});
+</script>
+<!-- ========== END FRUIT SLICE BLOCK ========== -->
+  
 </body>
 </html>
