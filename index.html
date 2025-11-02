@@ -28,17 +28,16 @@
       background: white;
       color: #0d47a1;
     }
-    #solatBox, #cuacaBox {
-      margin: 15px auto;
+    .card {
       background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 15px;
+      margin: 15px auto;
+      padding: 15px;
       width: 90%;
+      max-width: 420px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    .produk-section {
-      margin-top: 30px;
-      padding: 10px;
-    }
+    h2 { margin-top: 10px; }
     .produk-btn {
       display: block;
       background: white;
@@ -67,10 +66,7 @@
       transition: 0.3s;
       z-index: 1000;
     }
-    .modal.show {
-      visibility: visible;
-      opacity: 1;
-    }
+    .modal.show { visibility: visible; opacity: 1; }
     .modal-content {
       background: white;
       color: #0d47a1;
@@ -87,30 +83,7 @@
       cursor: pointer;
       color: #1976d2;
     }
-    .close:hover {
-      color: red;
-    }
-    #quoteForm {
-      margin-top: 15px;
-      display: flex;
-      flex-direction: column;
-    }
-    #quoteForm input, #quoteForm textarea {
-      margin: 6px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 8px;
-      font-size: 15px;
-      width: 100%;
-    }
-    #quoteForm button {
-      background: #1976d2;
-      color: white;
-      font-weight: bold;
-    }
-    #quoteForm button:hover {
-      background: #0d47a1;
-    }
+    .close:hover { color: red; }
     footer {
       margin-top: 30px;
       font-size: 14px;
@@ -121,14 +94,32 @@
 <body>
   <h1>🕌 Waktu Solat & Cuaca</h1>
 
-  <select id="negeriSelect">
-    <option value="">-- Pilih Negeri --</option>
-  </select>
+  <div class="card">
+    <select id="negeriSelect">
+      <option value="">-- Pilih Negeri --</option>
+      <option>Johor</option>
+      <option>Kedah</option>
+      <option>Kelantan</option>
+      <option>Melaka</option>
+      <option>Negeri Sembilan</option>
+      <option>Pahang</option>
+      <option>Perak</option>
+      <option>Perlis</option>
+      <option>Pulau Pinang</option>
+      <option>Sabah</option>
+      <option>Sarawak</option>
+      <option>Selangor</option>
+      <option>Terengganu</option>
+      <option>W.P. Kuala Lumpur</option>
+      <option>W.P. Putrajaya</option>
+      <option>W.P. Labuan</option>
+    </select>
 
-  <div id="solatBox">Sila pilih negeri untuk lihat waktu solat.</div>
-  <div id="cuacaBox">Memuatkan cuaca...</div>
+    <div id="solatBox" class="card">Sila pilih negeri untuk lihat waktu solat.</div>
+    <div id="cuacaBox" class="card">Memuatkan cuaca...</div>
+  </div>
 
-  <div class="produk-section">
+  <div class="card">
     <h2>💼 Produk Zurich Takaful</h2>
     <button class="produk-btn" data-produk="zdrive">Z-Drive Assist</button>
     <button class="produk-btn" data-produk="zmotor">Z-Motor</button>
@@ -138,24 +129,7 @@
     <button class="produk-btn" data-produk="zfirebiz">Fire Takaful (Business)</button>
   </div>
 
-  <!-- Modal Info Produk -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <div id="produkInfo"></div>
-
-      <form id="quoteForm">
-        <h4>📄 Request Quotation</h4>
-        <input type="text" id="nama" placeholder="Nama penuh" required />
-        <input type="tel" id="telefon" placeholder="No. Telefon" required />
-        <input type="email" id="email" placeholder="Email" required />
-        <textarea id="mesej" placeholder="Mesej tambahan (optional)" rows="3"></textarea>
-        <button type="submit">Hantar Permohonan</button>
-      </form>
-    </div>
-  </div>
-
-  <section id="quizSection">
+  <section id="quizSection" class="card">
     <h2>🎯 Kuiz Zurich Takaful</h2>
     <div id="quizBox">
       <p id="quizQuestion">Uji pengetahuan anda tentang takaful!</p>
@@ -164,8 +138,132 @@
     </div>
   </section>
 
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <div id="produkInfo"></div>
+    </div>
+  </div>
+
   <footer>© <span id="year"></span> BroChat AzA Takaful Zurich</footer>
 
-  <script src="script.js"></script>
+<script>
+// ===================== TARIKH
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// ===================== WAKTU SOLAT FIX (API)
+async function getWaktuSolat(negeri) {
+  const solatBox = document.getElementById("solatBox");
+  solatBox.innerHTML = "⏳ Memuatkan waktu solat...";
+
+  const zoneCodes = {
+    "Johor": "JHR01","Kedah": "KDH01","Kelantan": "KTN01","Melaka": "MLK01",
+    "Negeri Sembilan": "NGS01","Pahang": "PHG01","Perak": "PRK01","Perlis": "PLS01",
+    "Pulau Pinang": "PNG01","Sabah": "SBH01","Sarawak": "SWK01","Selangor": "SGR01",
+    "Terengganu": "TRG01","W.P. Kuala Lumpur": "WLY01","W.P. Putrajaya": "WLY02","W.P. Labuan": "WLY03"
+  };
+  const zone = zoneCodes[negeri];
+  if (!zone) return (solatBox.innerHTML = "⚠️ Zon negeri tidak dijumpai.");
+
+  try {
+    const res = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
+    const data = await res.json();
+    const w = data.prayerTime[0];
+    const toTime = ts => new Date(ts * 1000).toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit" });
+
+    solatBox.innerHTML = `
+      <h3>📍 ${data.zone}</h3>
+      🌅 Subuh: ${toTime(w.fajr)}<br>
+      ☀️ Syuruk: ${toTime(w.syuruk)}<br>
+      🕌 Zohor: ${toTime(w.dhuhr)}<br>
+      🌇 Asar: ${toTime(w.asr)}<br>
+      🌆 Maghrib: ${toTime(w.maghrib)}<br>
+      🌃 Isyak: ${toTime(w.isha)}<br>
+      <small>📅 ${w.hijri}</small>
+    `;
+  } catch (err) {
+    solatBox.innerHTML = "❌ Gagal memuatkan waktu solat.";
+  }
+}
+
+// ===================== CUACA
+async function getCuaca(lat, lon) {
+  const cuacaBox = document.getElementById("cuacaBox");
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m`);
+    const cuaca = await res.json();
+    const c = cuaca.current;
+    const weatherDesc = weatherIcon(c.weather_code);
+    cuacaBox.innerHTML = `
+      ${weatherDesc.icon} ${weatherDesc.text}<br>
+      🌡️ Suhu: ${c.temperature_2m}°C<br>
+      💨 Angin: ${c.wind_speed_10m} km/j
+    `;
+  } catch {
+    cuacaBox.innerHTML = "❌ Gagal memuatkan cuaca.";
+  }
+}
+
+function weatherIcon(code) {
+  const w = {0:["☀️","Cerah"],1:["🌤️","Sedikit berawan"],2:["⛅","Berawan"],3:["☁️","Mendung"],61:["🌧️","Hujan sederhana"],95:["⛈️","Ribut petir"]};
+  return {icon:w[code]?.[0]||"🌡️",text:w[code]?.[1]||"Cuaca tidak diketahui"};
+}
+
+// ===================== NEGERI PILIHAN
+const negeriSelect = document.getElementById("negeriSelect");
+negeriSelect.addEventListener("change", ()=>{
+  const negeri = negeriSelect.value;
+  const coords = {
+    "Johor": [1.49,103.74],"Kedah": [6.12,100.37],"Kelantan": [6.12,102.24],
+    "Melaka": [2.19,102.25],"Negeri Sembilan": [2.73,101.94],"Pahang": [3.81,103.33],
+    "Perak": [4.59,101.09],"Perlis": [6.44,100.20],"Pulau Pinang": [5.41,100.33],
+    "Sabah": [5.98,116.07],"Sarawak": [1.55,110.36],"Selangor": [3.07,101.52],
+    "Terengganu": [5.33,103.14],"W.P. Kuala Lumpur": [3.14,101.69],
+    "W.P. Putrajaya": [2.93,101.69],"W.P. Labuan": [5.28,115.23]
+  };
+  if (coords[negeri]) {
+    getWaktuSolat(negeri);
+    getCuaca(coords[negeri][0], coords[negeri][1]);
+  }
+});
+
+// ===================== PRODUK INFO (Popup)
+const produkInfo = {
+  zdrive: "🚗 <b>Z-Drive Assist</b> menawarkan bantuan tepi jalan, towing & khidmat kecemasan 24 jam.",
+  zmotor: "🏍️ <b>Z-Motor</b> melindungi kenderaan anda daripada kemalangan, kecurian & kebakaran.",
+  zrider: "🛵 <b>Z-Rider</b> untuk penunggang motosikal & skuter dengan perlindungan menyeluruh.",
+  zpa: "🧍 <b>Personal Accident (PA)</b> perlindungan diri 24/7 terhadap kemalangan & kecederaan.",
+  ztravel: "🧳 <b>Z-Travel</b> perlindungan perjalanan dalam & luar negara – kelewatan, kehilangan bagasi.",
+  zfirebiz: "🏢 <b>Fire Takaful (Business)</b> melindungi premis perniagaan daripada kebakaran & kerugian aset."
+};
+const modal = document.getElementById("modal");
+const modalContent = document.getElementById("produkInfo");
+const closeModal = document.getElementById("closeModal");
+document.querySelectorAll(".produk-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const info=btn.dataset.produk;
+    if(produkInfo[info]){
+      modalContent.innerHTML=produkInfo[info];
+      modal.classList.add("show");
+    }
+  });
+});
+closeModal.onclick=()=>modal.classList.remove("show");
+
+// ===================== KUIZ
+const quizData=[
+  {question:"Apakah perlindungan utama Z-Motor?",options:["Kemalangan, kebakaran & kecurian","Cermin depan sahaja","Takaful hayat"],answer:0},
+  {question:"Z-Rider sesuai untuk siapa?",options:["Penunggang motosikal","Pemilik rumah","Peniaga restoran"],answer:0},
+  {question:"Z-Drive Assist menawarkan bantuan apa?",options:["Bantuan tepi jalan & towing","Takaful nyawa"],answer:0}
+];
+let currentQuiz=0,score=0;
+const quizBox=document.getElementById("quizBox");
+const quizQ=document.getElementById("quizQuestion");
+const quizO=document.getElementById("quizOptions");
+const startBtn=document.getElementById("startQuiz");
+function loadQuiz(){const q=quizData[currentQuiz];quizQ.textContent=q.question;quizO.innerHTML="";q.options.forEach((opt,i)=>{const b=document.createElement("button");b.textContent=opt;b.className="produk-btn";b.onclick=()=>checkAnswer(i);quizO.appendChild(b);});}
+function checkAnswer(i){if(i===quizData[currentQuiz].answer)score++;currentQuiz++;if(currentQuiz<quizData.length)loadQuiz();else quizBox.innerHTML=`<h3>🎉 Kuiz Tamat!</h3><p>Skor anda: <b>${score}/${quizData.length}</b></p><button class='produk-btn' onclick='location.reload()'>Main Semula</button>`;}
+startBtn.onclick=()=>{startBtn.style.display="none";loadQuiz();}
+</script>
 </body>
 </html>
