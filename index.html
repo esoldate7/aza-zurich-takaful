@@ -261,5 +261,127 @@
       form.reset();
     });
   </script>
+  <!-- ============================= -->
+<!-- 🧠 Kuiz Zurich Takaful -->
+<!-- ============================= -->
+<script>
+(function initQuiz() {
+  const quizData = [
+    {
+      question: "Apakah tujuan utama takaful?",
+      options: [
+        "Perlindungan bersama berdasarkan tolong-menolong",
+        "Untuk keuntungan individu semata-mata",
+        "Sistem insurans konvensional",
+        "Pelaburan jangka pendek"
+      ],
+      answer: 0
+    },
+    {
+      question: "Apakah maksud 'Tabarru’' dalam takaful?",
+      options: [
+        "Sumbangan ikhlas ke dalam dana bersama",
+        "Pembayaran balik pinjaman",
+        "Bonus tahunan",
+        "Faedah pelaburan"
+      ],
+      answer: 0
+    },
+    {
+      question: "Produk Zurich manakah yang melindungi kenderaan anda?",
+      options: [
+        "Z-Rider",
+        "Z-Drive Assist",
+        "Z-Travel",
+        "Fire Takaful"
+      ],
+      answer: 1
+    },
+    {
+      question: "Z-Travel sesuai untuk apa?",
+      options: [
+        "Melindungi percutian dan perjalanan anda",
+        "Melindungi rumah daripada kebakaran",
+        "Memberi elaun hospital",
+        "Untuk pelan pendidikan anak"
+      ],
+      answer: 0
+    }
+  ];
+
+  const startBtn = document.getElementById("startQuiz");
+  const questionBox = document.getElementById("quizQuestion");
+  const optionsBox = document.getElementById("quizOptions");
+
+  if (!startBtn || !questionBox || !optionsBox) return;
+
+  let current = 0;
+  let score = 0;
+  let inProgress = false;
+
+  startBtn.addEventListener("click", () => {
+    startBtn.style.display = "none";
+    inProgress = true;
+    current = 0;
+    score = 0;
+    showQuestion();
+  });
+
+  function showQuestion() {
+    const q = quizData[current];
+    if (!q) return;
+
+    questionBox.textContent = q.question;
+    optionsBox.innerHTML = "";
+
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.className = "quiz-option";
+      btn.addEventListener("click", () => checkAnswer(i, btn));
+      optionsBox.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(i, btn) {
+    if (!inProgress) return;
+    const correct = quizData[current].answer;
+    const buttons = optionsBox.querySelectorAll("button");
+    buttons.forEach(b => (b.disabled = true));
+
+    if (i === correct) {
+      btn.style.background = "#a3ffb3";
+      score++;
+    } else {
+      btn.style.background = "#ffb3b3";
+      buttons[correct].style.background = "#a3ffb3";
+    }
+
+    setTimeout(() => {
+      current++;
+      if (current < quizData.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }, 700);
+  }
+
+  function showResult() {
+    inProgress = false;
+    questionBox.innerHTML = `✅ Kuiz Tamat!<br>Markah Anda: <b>${score}/${quizData.length}</b>`;
+    optionsBox.innerHTML = "";
+
+    const restart = document.createElement("button");
+    restart.textContent = "Ulang Kuiz 🔁";
+    restart.addEventListener("click", () => {
+      startBtn.style.display = "block";
+      questionBox.textContent = "Tekan butang di bawah untuk mula kuiz!";
+      optionsBox.innerHTML = "";
+    });
+    optionsBox.appendChild(restart);
+  }
+})();
+</script>
 </body>
 </html>
