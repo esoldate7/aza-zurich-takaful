@@ -152,9 +152,13 @@ if (modal && modalInfo && closeModal) {
   });
 })();
 // =============================
-// 🧠 Kuiz Zurich Takaful — Versi Dibaiki & Animasi Smooth
+// 🧠 Kuiz Zurich Takaful — Versi Fix Mobile (tanpa DOMContentLoaded double bind)
 // =============================
-document.addEventListener("DOMContentLoaded", () => {
+
+(function initQuiz() {
+  const quizSection = document.getElementById("quizSection");
+  if (!quizSection) return; // elak error kalau section tiada
+
   const quizData = [
     {
       question: "Apakah tujuan utama takaful?",
@@ -203,6 +207,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const optionsBox = document.getElementById("quizOptions");
   const progressBar = document.querySelector("#quizProgress div");
 
+  if (!startBtn || !questionBox || !optionsBox || !progressBar) return;
+
   let current = 0;
   let score = 0;
   let inProgress = false;
@@ -223,6 +229,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // =============================
   function showQuestion() {
     const q = quizData[current];
+    if (!q) return;
+
     questionBox.textContent = q.question;
     optionsBox.innerHTML = "";
     updateProgress();
@@ -231,20 +239,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const btn = document.createElement("button");
       btn.textContent = opt;
       btn.className = "quiz-option";
-      btn.onclick = () => checkAnswer(i, btn);
+      btn.addEventListener("click", () => checkAnswer(i, btn));
       optionsBox.appendChild(btn);
     });
 
-    // animasi kecil supaya smooth
     questionBox.style.opacity = 0;
-    setTimeout(() => (questionBox.style.opacity = 1), 50);
+    setTimeout(() => (questionBox.style.opacity = 1), 80);
   }
 
   // =============================
   // 🔄 Update Progress Bar
   // =============================
   function updateProgress() {
-    const percent = ((current) / quizData.length) * 100;
+    const percent = (current / quizData.length) * 100;
     progressBar.style.width = percent + "%";
   }
 
@@ -253,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =============================
   function checkAnswer(i, btn) {
     if (!inProgress) return;
-
     const correct = quizData[current].answer;
     const buttons = optionsBox.querySelectorAll("button");
     buttons.forEach(b => (b.disabled = true));
@@ -266,14 +272,10 @@ document.addEventListener("DOMContentLoaded", () => {
       buttons[correct].style.background = "#a3ffb3";
     }
 
-    // terus ke next soalan
     setTimeout(() => {
       current++;
-      if (current < quizData.length) {
-        showQuestion();
-      } else {
-        showResult();
-      }
+      if (current < quizData.length) showQuestion();
+      else showResult();
     }, 800);
   }
 
@@ -289,12 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const restart = document.createElement("button");
     restart.textContent = "Ulang Kuiz 🔁";
     restart.id = "restartQuiz";
-    restart.onclick = () => {
+    restart.addEventListener("click", () => {
       startBtn.style.display = "block";
       questionBox.textContent = "Tekan butang di bawah untuk mula kuiz!";
       optionsBox.innerHTML = "";
       progressBar.style.width = "0%";
-    };
+    });
     optionsBox.appendChild(restart);
   }
-});
+})();
