@@ -227,7 +227,7 @@ negeriSelect.addEventListener("change", ()=>{
   }
 });
 
-// ===================== PRODUK INFO (Popup)
+// ===================== PRODUK INFO (Popup + Form)
 const produkInfo = {
   zdrive: "🚗 <b>Z-Drive Assist</b> menawarkan bantuan tepi jalan, towing & khidmat kecemasan 24 jam.",
   zmotor: "🏍️ <b>Z-Motor</b> melindungi kenderaan anda daripada kemalangan, kecurian & kebakaran.",
@@ -236,19 +236,50 @@ const produkInfo = {
   ztravel: "🧳 <b>Z-Travel</b> perlindungan perjalanan dalam & luar negara – kelewatan, kehilangan bagasi.",
   zfirebiz: "🏢 <b>Fire Takaful (Business)</b> melindungi premis perniagaan daripada kebakaran & kerugian aset."
 };
+
 const modal = document.getElementById("modal");
 const modalContent = document.getElementById("produkInfo");
 const closeModal = document.getElementById("closeModal");
+
 document.querySelectorAll(".produk-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
-    const info=btn.dataset.produk;
-    if(produkInfo[info]){
-      modalContent.innerHTML=produkInfo[info];
+    const key = btn.dataset.produk;
+    if(produkInfo[key]){
+      modalContent.innerHTML = `
+        ${produkInfo[key]}
+        <hr>
+        <h4>🧾 Request Quotation</h4>
+        <form id="quoteForm">
+          <label>Nama Penuh:</label><br>
+          <input type="text" id="nama" placeholder="Contoh: Ahmad Razin" required style="width:95%;padding:8px;border-radius:6px;border:1px solid #ccc;"><br><br>
+          <label>No. Telefon:</label><br>
+          <input type="tel" id="telefon" placeholder="Contoh: 0123456789" required style="width:95%;padding:8px;border-radius:6px;border:1px solid #ccc;"><br><br>
+          <label>Jenis Perlindungan:</label><br>
+          <select id="coverage" style="width:95%;padding:8px;border-radius:6px;border:1px solid #ccc;">
+            <option>Perlindungan Penuh</option>
+            <option>Third Party</option>
+            <option>Kemalangan Diri</option>
+          </select><br><br>
+          <button type="submit" style="background:#0d47a1;color:white;padding:10px 20px;border:none;border-radius:8px;">Hantar</button>
+        </form>
+        <div id="successMsg" style="display:none;color:green;margin-top:10px;font-weight:bold;">✅ Permintaan telah dihantar!</div>
+      `;
+
+      // Tambah event listener form hantar
+      const form = modalContent.querySelector("#quoteForm");
+      form.addEventListener("submit", e=>{
+        e.preventDefault();
+        form.style.display = "none";
+        modalContent.querySelector("#successMsg").style.display = "block";
+        setTimeout(()=>modal.classList.remove("show"), 2500);
+      });
+
       modal.classList.add("show");
     }
   });
 });
-closeModal.onclick=()=>modal.classList.remove("show");
+
+closeModal.onclick = ()=> modal.classList.remove("show");
 
 // ===================== KUIZ
 const quizData=[
@@ -265,5 +296,6 @@ function loadQuiz(){const q=quizData[currentQuiz];quizQ.textContent=q.question;q
 function checkAnswer(i){if(i===quizData[currentQuiz].answer)score++;currentQuiz++;if(currentQuiz<quizData.length)loadQuiz();else quizBox.innerHTML=`<h3>🎉 Kuiz Tamat!</h3><p>Skor anda: <b>${score}/${quizData.length}</b></p><button class='produk-btn' onclick='location.reload()'>Main Semula</button>`;}
 startBtn.onclick=()=>{startBtn.style.display="none";loadQuiz();}
 </script>
+  
 </body>
 </html>
