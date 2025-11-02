@@ -1,302 +1,204 @@
-// ===== Update Tahun =====
-document.getElementById("year").textContent = new Date().getFullYear();
+// ===================== WAKTU SOLAT & CUACA =====================
 
-// ===== Senarai Negeri =====
+// Senarai negeri Malaysia
+const negeriList = [
+  "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang",
+  "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak",
+  "Selangor", "Terengganu", "W.P. Kuala Lumpur", "W.P. Putrajaya", "W.P. Labuan"
+];
+
 const negeriSelect = document.getElementById("negeriSelect");
-const solatResult = document.getElementById("solatResult");
-const zonNegeri = {
-  "WLY01": "Kuala Lumpur",
-  "WLY02": "Putrajaya",
-  "SGR01": "Selangor",
-  "JHR01": "Johor",
-  "KDH01": "Kedah",
-  "KTN01": "Kelantan",
-  "MLK01": "Melaka",
-  "NSN01": "Negeri Sembilan",
-  "PHG01": "Pahang",
-  "PRK01": "Perak",
-  "PLS01": "Perlis",
-  "PNG01": "Pulau Pinang",
-  "SBH01": "Sabah",
-  "SWK01": "Sarawak",
-  "TRG01": "Terengganu",
-  "LBN01": "Labuan"
-};
+const solatBox = document.getElementById("solatBox");
+const cuacaBox = document.getElementById("cuacaBox");
 
-// Populate dropdown
-Object.entries(zonNegeri).forEach(([code, name]) => {
+// Populate dropdown negeri
+negeriList.forEach(n => {
   const opt = document.createElement("option");
-  opt.value = code;
-  opt.textContent = name;
+  opt.value = n;
+  opt.textContent = n;
   negeriSelect.appendChild(opt);
 });
 
-// ===== Waktu Solat =====
-negeriSelect.addEventListener("change", async () => {
-  const zone = negeriSelect.value;
-  if (!zone) return;
-
-  solatResult.innerHTML = "⏳ Memuatkan waktu solat...";
-
-  try {
-    const res = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${zone}`);
-    const data = await res.json();
-
-    // Safety check
-    if (!data.prayerTime || !data.prayerTime[0]) throw new Error("Tiada data waktu solat");
-
-    const time = data.prayerTime[0];
-    const html = `
-      <ul>
-        <li>🌅 Subuh: <b>${formatTime(time.Subuh)}</b></li>
-        <li>☀️ Zohor: <b>${formatTime(time.Zohor)}</b></li>
-        <li>🌇 Asar: <b>${formatTime(time.Asar)}</b></li>
-        <li>🌆 Maghrib: <b>${formatTime(time.Maghrib)}</b></li>
-        <li>🌃 Isyak: <b>${formatTime(time.Isyak)}</b></li>
-      </ul>
-      <p>🗓 ${time.Tarikh} (${data.zoneName || zone})</p>
-    `;
-    solatResult.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    solatResult.innerHTML = "❌ Gagal memuatkan waktu solat.";
+negeriSelect.addEventListener("change", () => {
+  const negeri = negeriSelect.value;
+  if (negeri) {
+    getWaktuSolat(negeri);
+    getCuaca(negeri);
   }
 });
 
-function formatTime(epoch) {
-  if (!epoch) return "-";
-  const d = new Date(epoch * 1000);
-  return d.toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit" });
-}
-
-// ===== Cuaca =====
-const cuacaResult = document.getElementById("cuacaResult");
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const { latitude, longitude } = pos.coords;
-    try {
-      const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode`
-      );
-      const data = await res.json();
-      cuacaResult.textContent = `🌡️ Suhu: ${data.current.temperature_2m}°C`;
-    } catch (e) {
-      cuacaResult.textContent = "❌ Tidak dapat memuatkan cuaca.";
+// API Waktu Solat
+async function getWaktuSolat(negeri) {
+  solatBox.innerHTML = "⏳ Memuatkan waktu solat...";
+  try {
+    const resp = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${encodeURIComponent(negeri)}`);
+    const data = await resp.json();
+    if (data.prayerTime && data.prayerTime[0]) {
+      const w = data.prayerTime[0];
+      const toTime = ts => new Date(ts * 1000).toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit" });
+      solatBox.innerHTML = `
+        <h3>📍 Zon: ${data.zone}</h3>
+        <p>Subuh: ${toTime(w.fajr)}</p>
+        <p>Syuruk: ${toTime(w.syuruk)}</p>
+        <p>Zohor: ${toTime(w.dhuhr)}</p>
+        <p>Asar: ${toTime(w.asr)}</p>
+        <p>Maghrib: ${toTime(w.maghrib)}</p>
+        <p>Isyak: ${toTime(w.isha)}</p>
+        <small>Tarikh Hijri: ${w.hijri}</small>
+      `;
+    } else {
+      solatBox.innerHTML = "❌ Gagal memuatkan waktu solat.";
     }
-  }, () => cuacaResult.textContent = "❌ Tidak dapat kesan lokasi cuaca.");
-} else {
-  cuacaResult.textContent = "Peranti tidak menyokong geolocation.";
+  } catch (err) {
+    solatBox.innerHTML = "⚠️ Ralat capaian API waktu solat.";
+  }
 }
 
-// ===== Produk Zurich =====
-const produkData = {
+// API Cuaca
+async function getCuaca(negeri) {
+  cuacaBox.innerHTML = "⏳ Memuatkan data cuaca...";
+  try {
+    const resp = await fetch(`https://corsproxy.io/?https://api.open-meteo.com/v1/forecast?latitude=3.139&longitude=101.6869&current_weather=true`);
+    const data = await resp.json();
+    const weather = data.current_weather;
+    cuacaBox.innerHTML = `
+      <h3>🌤️ Cuaca Semasa</h3>
+      <p>Negeri: ${negeri}</p>
+      <p>Suhu: ${weather.temperature}°C</p>
+      <p>Kelajuan Angin: ${weather.windspeed} km/j</p>
+      <p>Keadaan: ${weather.weathercode < 3 ? "Cerah" : "Berawan / Hujan"}</p>
+    `;
+  } catch (err) {
+    cuacaBox.innerHTML = "⚠️ Tidak dapat memuatkan cuaca.";
+  }
+}
+
+// ===================== PRODUK ZURICH TAKAFUL =====================
+
+const produkInfo = {
   zdrive: {
     nama: "Z-Drive Assist",
-    info: "Perlindungan komprehensif bagi kenderaan anda termasuk bantuan kecemasan di jalan raya, towing, dan pembaikan segera.",
+    info: "Perlindungan menyeluruh untuk kenderaan anda termasuk bantuan tepi jalan, tunda dan kemalangan.",
   },
   zmotor: {
     nama: "Z-Motor",
-    info: "Pelan Takaful Motor yang memberi perlindungan menyeluruh untuk kenderaan peribadi terhadap kemalangan, kebakaran, dan kecurian.",
+    info: "Takaful komprehensif untuk kereta anda meliputi kerosakan, kecurian dan liabiliti pihak ketiga.",
   },
   zrider: {
     nama: "Z-Rider",
-    info: "Takaful khas untuk penunggang motosikal, dengan perlindungan kemalangan diri dan manfaat hospitalisasi.",
+    info: "Perlindungan untuk penunggang motosikal — termasuk kemalangan diri dan kehilangan kenderaan.",
   },
   zpa: {
-    nama: "Personal Accident",
-    info: "Perlindungan 24 jam di seluruh dunia terhadap kemalangan diri dan kecederaan tidak dijangka.",
+    nama: "Personal Accident (PA)",
+    info: "Lindungi diri anda dan keluarga daripada risiko kemalangan dengan pampasan tunai segera.",
   },
   ztravel: {
     nama: "Z-Travel",
-    info: "Perlindungan perjalanan dalam & luar negara termasuk kelewatan penerbangan, kehilangan bagasi, dan kecemasan perubatan.",
+    info: "Takaful perjalanan bagi melindungi anda daripada kecemasan, kehilangan bagasi dan kelewatan penerbangan.",
   },
   zfirebiz: {
     nama: "Fire Takaful (Business)",
-    info: "Lindungi premis perniagaan anda daripada risiko kebakaran, letupan, dan bencana alam.",
-  },
+    info: "Perlindungan untuk premis perniagaan anda terhadap risiko kebakaran, letupan dan bencana lain.",
+  }
 };
 
-const modal = document.getElementById("produkModal");
-const modalInfo = document.getElementById("produkInfo");
+const modal = document.getElementById("modal");
+const produkInfoDiv = document.getElementById("produkInfo");
 const closeModal = document.getElementById("closeModal");
 
-if (modal && modalInfo && closeModal) {
-  document.querySelectorAll(".produk-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const produk = produkData[btn.dataset.produk];
-      if (!produk) return;
-      modalInfo.innerHTML = `
-        <h3>${produk.nama}</h3>
-        <p>${produk.info}</p>
-        <button class="btn-quote">📄 Request Quotation</button>
+document.querySelectorAll(".produk-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.produk;
+    const p = produkInfo[key];
+    if (p) {
+      produkInfoDiv.innerHTML = `
+        <h3>${p.nama}</h3>
+        <p>${p.info}</p>
       `;
-      modal.classList.remove("hidden");
-    });
+      modal.classList.add("show");
+    }
   });
+});
 
-  closeModal.addEventListener("click", () => modal.classList.add("hidden"));
+closeModal.addEventListener("click", () => modal.classList.remove("show"));
+window.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("show"); });
+
+// Borang Quotation
+const quoteForm = document.getElementById("quoteForm");
+quoteForm.addEventListener("submit", e => {
+  e.preventDefault();
+  alert("✅ Permohonan quotation telah dihantar! Kami akan hubungi anda tidak lama lagi.");
+  modal.classList.remove("show");
+  quoteForm.reset();
+});
+
+// ===================== KUIZ =====================
+const quizSection = document.getElementById("quizSection");
+const quizBox = document.getElementById("quizBox");
+const quizQuestion = document.getElementById("quizQuestion");
+const quizOptions = document.getElementById("quizOptions");
+const startQuiz = document.getElementById("startQuiz");
+
+const quizData = [
+  {
+    q: "Apakah maksud 'Takaful'?",
+    o: ["Perlindungan bersama", "Insurans konvensional", "Pinjaman kewangan"],
+    a: 0
+  },
+  {
+    q: "Z-Drive Assist direka untuk?",
+    o: ["Perlindungan rumah", "Bantuan kecemasan kenderaan", "Pelan pelancongan"],
+    a: 1
+  },
+  {
+    q: "Z-Travel memberi perlindungan untuk?",
+    o: ["Kemalangan tempat kerja", "Perjalanan dan bagasi", "Pembelian kereta"],
+    a: 1
+  },
+  {
+    q: "Personal Accident (PA) memberi pampasan untuk?",
+    o: ["Kemalangan diri", "Kecurian kenderaan", "Bencana alam"],
+    a: 0
+  }
+];
+
+let current = 0;
+let score = 0;
+
+startQuiz.addEventListener("click", start);
+
+function start() {
+  current = 0;
+  score = 0;
+  startQuiz.style.display = "none";
+  loadQuestion();
 }
 
-// ===== Fade-in Animation =====
-(function setupFadeIn() {
-  const sections = document.querySelectorAll(".section-fade");
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add("visible");
-    });
-  }, { threshold: 0.1 });
-
-  sections.forEach((el, i) => {
-    el.style.setProperty("--delay", `${i * 150}ms`);
-    io.observe(el);
+function loadQuestion() {
+  const q = quizData[current];
+  quizQuestion.textContent = q.q;
+  quizOptions.innerHTML = "";
+  q.o.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+    btn.className = "produk-btn";
+    btn.onclick = () => checkAnswer(i);
+    quizOptions.appendChild(btn);
   });
-})();
-// =============================
-// 🧠 Kuiz Zurich Takaful — Versi Fix Mobile (tanpa DOMContentLoaded double bind)
-// =============================
+}
 
-(function initQuiz() {
-  const quizSection = document.getElementById("quizSection");
-  if (!quizSection) return; // elak error kalau section tiada
-
-  const quizData = [
-    {
-      question: "Apakah tujuan utama takaful?",
-      options: [
-        "Perlindungan bersama berdasarkan tolong-menolong",
-        "Untuk keuntungan individu semata-mata",
-        "Sistem insurans konvensional",
-        "Pelaburan jangka pendek"
-      ],
-      answer: 0
-    },
-    {
-      question: "Apakah maksud 'Tabarru’' dalam takaful?",
-      options: [
-        "Sumbangan ikhlas ke dalam dana bersama",
-        "Pembayaran balik pinjaman",
-        "Bonus tahunan",
-        "Faedah pelaburan"
-      ],
-      answer: 0
-    },
-    {
-      question: "Produk Zurich manakah yang melindungi kenderaan anda?",
-      options: [
-        "Z-Rider",
-        "Z-Drive Assist",
-        "Z-Travel",
-        "Fire Takaful"
-      ],
-      answer: 1
-    },
-    {
-      question: "Z-Travel sesuai untuk apa?",
-      options: [
-        "Melindungi percutian dan perjalanan anda",
-        "Melindungi rumah daripada kebakaran",
-        "Memberi elaun hospital",
-        "Untuk pelan pendidikan anak"
-      ],
-      answer: 0
-    }
-  ];
-
-  const startBtn = document.getElementById("startQuiz");
-  const questionBox = document.getElementById("quizQuestion");
-  const optionsBox = document.getElementById("quizOptions");
-  const progressBar = document.querySelector("#quizProgress div");
-
-  if (!startBtn || !questionBox || !optionsBox || !progressBar) return;
-
-  let current = 0;
-  let score = 0;
-  let inProgress = false;
-
-  // =============================
-  // 🚀 Start Kuiz
-  // =============================
-  startBtn.addEventListener("click", () => {
-    startBtn.style.display = "none";
-    inProgress = true;
-    current = 0;
-    score = 0;
-    showQuestion();
-  });
-
-  // =============================
-  // 📄 Papar Soalan
-  // =============================
-  function showQuestion() {
-    const q = quizData[current];
-    if (!q) return;
-
-    questionBox.textContent = q.question;
-    optionsBox.innerHTML = "";
-    updateProgress();
-
-    q.options.forEach((opt, i) => {
-      const btn = document.createElement("button");
-      btn.textContent = opt;
-      btn.className = "quiz-option";
-      btn.addEventListener("click", () => checkAnswer(i, btn));
-      optionsBox.appendChild(btn);
-    });
-
-    questionBox.style.opacity = 0;
-    setTimeout(() => (questionBox.style.opacity = 1), 80);
+function checkAnswer(i) {
+  if (i === quizData[current].a) score++;
+  current++;
+  if (current < quizData.length) {
+    loadQuestion();
+  } else {
+    quizQuestion.innerHTML = `🎉 Tamat! Skor anda: <b>${score}/${quizData.length}</b>`;
+    quizOptions.innerHTML = "";
+    startQuiz.textContent = "Main Semula";
+    startQuiz.style.display = "block";
   }
+}
 
-  // =============================
-  // 🔄 Update Progress Bar
-  // =============================
-  function updateProgress() {
-    const percent = (current / quizData.length) * 100;
-    progressBar.style.width = percent + "%";
-  }
-
-  // =============================
-  // ✅ Semak Jawapan
-  // =============================
-  function checkAnswer(i, btn) {
-    if (!inProgress) return;
-    const correct = quizData[current].answer;
-    const buttons = optionsBox.querySelectorAll("button");
-    buttons.forEach(b => (b.disabled = true));
-
-    if (i === correct) {
-      btn.style.background = "#a3ffb3";
-      score++;
-    } else {
-      btn.style.background = "#ffb3b3";
-      buttons[correct].style.background = "#a3ffb3";
-    }
-
-    setTimeout(() => {
-      current++;
-      if (current < quizData.length) showQuestion();
-      else showResult();
-    }, 800);
-  }
-
-  // =============================
-  // 🏁 Tamat Kuiz
-  // =============================
-  function showResult() {
-    inProgress = false;
-    progressBar.style.width = "100%";
-    questionBox.innerHTML = `✅ Kuiz Tamat!<br>Markah Anda: <b>${score}/${quizData.length}</b>`;
-    optionsBox.innerHTML = "";
-
-    const restart = document.createElement("button");
-    restart.textContent = "Ulang Kuiz 🔁";
-    restart.id = "restartQuiz";
-    restart.addEventListener("click", () => {
-      startBtn.style.display = "block";
-      questionBox.textContent = "Tekan butang di bawah untuk mula kuiz!";
-      optionsBox.innerHTML = "";
-      progressBar.style.width = "0%";
-    });
-    optionsBox.appendChild(restart);
-  }
-})();
+// Tahun automatik footer
+document.getElementById("year").textContent = new Date().getFullYear();
