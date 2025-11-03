@@ -51,5 +51,227 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+/*
+  Universal init script — attaches listeners safely and reports missing elements.
+  Paste this as the only <script> at the end of index.html (before </body>).
+*/
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // Helper safe-get
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const exist = (el, name) => {
+      if (!el) console.warn(`UI init: element not found -> ${name}`);
+      return !!el;
+    };
+
+    // ---------- NAV / SECTIONS ----------
+    const navButtons = $$('header nav button') || $$('nav button');
+    const sections = $$('section');
+    function showSection(id) {
+      sections.forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) target.classList.add('active');
+      else console.warn('showSection: missing', id);
+    }
+    // attach nav buttons (if any) - keep attribute 'data-target' or use text fallback
+    navButtons.forEach(btn => {
+      // prefer data-target attribute, fallback to text mapping
+      const target = btn.dataset?.target || btn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+      if (target) {
+        btn.addEventListener('click', (e) => { e.preventDefault(); showSection(target); });
+      } else {
+        // no data-target or onclick found — try to infer from label
+        btn.addEventListener('click', () => console.info('Nav button clicked (no target configured):', btn.textContent));
+      }
+    });
+
+    // ---------- NEGERI SELECT (Waktu solat + cuaca) ----------
+    const negeriSelect = $('#negeriSelect');
+    const solatResult = $('#solatResult') || $('#solatBox') || $('#solatResult');
+    const cuacaResult = $('#cuacaResult') || $('#cuacaBox');
+
+    if (exist(negeriSelect, '#negeriSelect')) {
+      negeriSelect.addEventListener('change', async () => {
+        if (!exist(solatResult, 'solatResult') || !exist(cuacaResult, 'cuacaResult')) {
+          console.warn('Change handler: solatResult or cuacaResult missing');
+          return;
+        }
+        const zone = negeriSelect.value;
+        if (!zone) {
+          solatResult.textContent = 'Sila pilih negeri.';
+          return;
+        }
+        solatResult.textContent = '⏳ Memuatkan...';
+        try {
+          // try e-solat first
+          const res = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
+          const data = await res.json();
+          if (data && data.prayerTime && data.prayerTime[0]) {
+            const d = data.prayerTime[0];
+            solatResult.innerHTML = `
+              🌅 Subuh: <b>${d.fajr}</b><br>
+              ☀️ Zohor: <b>${d.dhuhr}</b><br>
+              🌇 Asar: <b>${d.asr}</b><br>
+              🌆 Maghrib: <b>${d.maghrib}</b><br>
+              🌃 Isyak: <b>${d.isha}</b><br>
+              📅 ${d.date}
+            `;
+          } else {
+            throw new Error('eSolat returned no data');
+          }
+        } catch (err) {
+          console.warn('waktu solat fetch failed:', err);
+          solatResult.textContent = '❌ Gagal memuatkan waktu solat.';
+        }
+
+        // cuaca (try coords mapping if present)
+        try {
+          const coordsMap = {
+            "WLY01":[3.139,101.6869],"SGR01":[3.0738,101.5183],"PNG01":[5.4164,100.3327],"PRK01":[4.5975,101.0901],
+            "JHR01":[1.4927,103.7414],"KTN01":[6.1254,102.2381],"NSN01":[2.7258,101.9424],"PHG01":[3.8126,103.3256],
+            "KDH01":[6.1184,100.3685],"PLS01":[6.4447,100.2046],"TRG01":[5.3302,103.1408],"SBH01":[5.978,116.0753],"SWK01":[1.5533,110.3592]
+          };
+          const c = coordsMap[zone];
+          if (!c) { cuacaResult.textContent = '⛅ Koordinat tidak tersedia.'; return; }
+          cuacaResult.textContent = '⛅ Memuatkan cuaca...';
+          const [lat, lon] = c;
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+          const weather = await weatherRes.json();
+          if (weather && weather.current_weather) {
+            const cw = weather.current_weather;
+            cuacaResult.innerHTML = `🌡️ ${cw.temperature}°C — W: ${cw.windspeed} km/h`;
+          } else {
+            throw new Error('No weather data');
+          }
+        } catch (err) {
+          console.warn('cuaca fetch failed:', err);
+          cuacaResult.textContent = '❌ Gagal memuatkan cuaca.';
+        }
+      });
+    } else {
+      console.warn('#negeriSelect not found — waktu solat may not work');
+    }
+
+    // ---------- PRODUK POPUP ----------
+    const produkBtns = $$('.produk-btn');
+    const modal = $('#modal');
+    const produkInfo = $('#produkInfo');
+    const closeModal = $('#closeModal') || $('.close');
+    if (produkBtns.length === 0) console.warn('No .produk-btn found');
+
+    produkBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset?.produk;
+        // data source fallback
+        const infoMap = {
+          zdrive: 'Z-Drive Assist — bantuan tepi jalan, towing, emergency.',
+          zmotor: 'Z-Motor — pelan motor komprehensif.',
+          zrider: 'Z-Rider — untuk penunggang motosikal/skuter.',
+          zpa: 'Personal Accident — perlindungan kemalangan diri.',
+          ztravel: 'Z-Travel — perlindungan perjalanan.',
+          zfirebiz: 'Fire Takaful (Business) — perlindungan premis perniagaan.'
+        };
+        produkInfo.innerHTML = infoMap[key] || 'Maklumat tidak dijumpai.';
+        if (modal) modal.classList.add('show'); else console.warn('Modal element missing (#modal)');
+      });
+    });
+
+    if (exist(closeModal, '#closeModal or .close')) {
+      closeModal.addEventListener('click', () => modal && modal.classList.remove('show'));
+    }
+
+    // ensure clicking outside modal also closes
+    if (modal) {
+      window.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+    }
+
+    // ---------- QUOTE FORM -> WhatsApp ----------
+    const quoteForm = $('#quoteForm');
+    if (quoteForm) {
+      quoteForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nama = $('#nama')?.value || '';
+        const telefon = $('#telefon')?.value || '';
+        const email = $('#email')?.value || '';
+        const mesej = $('#mesej')?.value || '';
+        // try to derive product name from modal content (simple)
+        let prod = (produkInfo?.textContent || '').split('\n')[0] || 'Zurich Takaful';
+        const text = encodeURIComponent(`Assalamualaikum, saya nak minta quotation produk ${prod}.\nNama: ${nama}\nTelefon: ${telefon}\nEmail: ${email}\nMesej: ${mesej}`);
+        // open whatsapp number (Bro's number)
+        window.open(`https://wa.me/60192506999?text=${text}`, '_blank');
+      });
+    } else {
+      console.warn('#quoteForm not found');
+    }
+
+    // ---------- QUIZ ----------
+    const startQuizBtn = $('#startQuiz');
+    const quizQuestion = $('#quizQuestion');
+    const quizOptions = $('#quizOptions');
+    if (exist(startQuizBtn, '#startQuiz') && exist(quizQuestion, '#quizQuestion') && exist(quizOptions, '#quizOptions')) {
+      const quizData = [
+        { q: "Apakah tujuan utama takaful?", o:["Tolong-menolong","Untung individu","Insurans konvensional"], a:0 },
+        { q: "Z-Drive Assist untuk?", o:["Bantuan jalan","Takaful hayat","Insurans rumah"], a:0 }
+      ];
+      let idx = 0, score = 0;
+      function showQ() {
+        const q = quizData[idx];
+        quizQuestion.textContent = q.q;
+        quizOptions.innerHTML = '';
+        q.o.forEach((opt, i) => {
+          const b = document.createElement('button');
+          b.className = 'produk-btn';
+          b.textContent = opt;
+          b.addEventListener('click', () => {
+            if (i === q.a) score++;
+            idx++;
+            if (idx < quizData.length) showQ(); else {
+              quizQuestion.innerHTML = `🎉 Tamat! Skor: <b>${score}/${quizData.length}</b>`;
+              quizOptions.innerHTML = `<button class="produk-btn" id="quizRestart">Main Semula</button>`;
+              $('#quizRestart')?.addEventListener('click', () => { idx=0; score=0; showQ(); });
+            }
+          });
+          quizOptions.appendChild(b);
+        });
+      }
+      startQuizBtn.addEventListener('click', () => { startQuizBtn.style.display = 'none'; showQ(); });
+    } else {
+      console.warn('Quiz elements missing; quiz disabled');
+    }
+
+    // ---------- FRUIT SLICE LAUNCHER (if present) ----------
+    const openFruitBtn = $('#openFruitGame') || $('#openFruit');
+    const fruitModal = $('#fruitModal');
+    if (openFruitBtn && fruitModal) {
+      openFruitBtn.addEventListener('click', () => {
+        // hide other sections
+        sections.forEach(s => s.classList.remove('active'));
+        if (fruitModal) fruitModal.classList.add('show');
+        // call existing fruit init if present
+        if (typeof startGame === 'function') {
+          try { startGame(); } catch (e) { console.warn('startGame failed', e); }
+        }
+      });
+    } else {
+      // If fruit modal was integrated differently it's okay
+      if (!openFruitBtn) console.info('No fruit open button found (not required)');
+    }
+
+    // ---------- Final: ensure one active section visible ----------
+    if (!document.querySelector('section.active')) {
+      // prefer waktuSolat, else first
+      const prefer = document.getElementById('waktuSolat') || sections[0];
+      if (prefer) prefer.classList.add('active');
+    }
+
+    console.info('UI init complete — listeners attached.');
+  } catch (err) {
+    console.error('UI init fatal error:', err);
+    alert('Ralat skrip berlaku. Buka Console (DevTools) untuk lihat butiran.');
+  }
+});
+</script>
 </body>
 </html>
