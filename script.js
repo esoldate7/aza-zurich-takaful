@@ -1,204 +1,76 @@
-// ===================== WAKTU SOLAT & CUACA =====================
-
-// Senarai negeri Malaysia
-const negeriList = [
-  "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang",
-  "Perak", "Perlis", "Pulau Pinang", "Sabah", "Sarawak",
-  "Selangor", "Terengganu", "W.P. Kuala Lumpur", "W.P. Putrajaya", "W.P. Labuan"
-];
-
-const negeriSelect = document.getElementById("negeriSelect");
-const solatBox = document.getElementById("solatBox");
-const cuacaBox = document.getElementById("cuacaBox");
-
-// Populate dropdown negeri
-negeriList.forEach(n => {
-  const opt = document.createElement("option");
-  opt.value = n;
-  opt.textContent = n;
-  negeriSelect.appendChild(opt);
-});
-
-negeriSelect.addEventListener("change", () => {
-  const negeri = negeriSelect.value;
-  if (negeri) {
-    getWaktuSolat(negeri);
-    getCuaca(negeri);
-  }
-});
-
-// API Waktu Solat
-async function getWaktuSolat(negeri) {
-  solatBox.innerHTML = "⏳ Memuatkan waktu solat...";
-  try {
-    const resp = await fetch(`https://corsproxy.io/?https://api.waktusolat.app/v2/solat/${encodeURIComponent(negeri)}`);
-    const data = await resp.json();
-    if (data.prayerTime && data.prayerTime[0]) {
-      const w = data.prayerTime[0];
-      const toTime = ts => new Date(ts * 1000).toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit" });
-      solatBox.innerHTML = `
-        <h3>📍 Zon: ${data.zone}</h3>
-        <p>Subuh: ${toTime(w.fajr)}</p>
-        <p>Syuruk: ${toTime(w.syuruk)}</p>
-        <p>Zohor: ${toTime(w.dhuhr)}</p>
-        <p>Asar: ${toTime(w.asr)}</p>
-        <p>Maghrib: ${toTime(w.maghrib)}</p>
-        <p>Isyak: ${toTime(w.isha)}</p>
-        <small>Tarikh Hijri: ${w.hijri}</small>
-      `;
-    } else {
-      solatBox.innerHTML = "❌ Gagal memuatkan waktu solat.";
-    }
-  } catch (err) {
-    solatBox.innerHTML = "⚠️ Ralat capaian API waktu solat.";
-  }
+// Fungsi tukar section
+function showSection(id) {
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-// API Cuaca
-async function getCuaca(negeri) {
-  cuacaBox.innerHTML = "⏳ Memuatkan data cuaca...";
-  try {
-    const resp = await fetch(`https://corsproxy.io/?https://api.open-meteo.com/v1/forecast?latitude=3.139&longitude=101.6869&current_weather=true`);
-    const data = await resp.json();
-    const weather = data.current_weather;
-    cuacaBox.innerHTML = `
-      <h3>🌤️ Cuaca Semasa</h3>
-      <p>Negeri: ${negeri}</p>
-      <p>Suhu: ${weather.temperature}°C</p>
-      <p>Kelajuan Angin: ${weather.windspeed} km/j</p>
-      <p>Keadaan: ${weather.weathercode < 3 ? "Cerah" : "Berawan / Hujan"}</p>
-    `;
-  } catch (err) {
-    cuacaBox.innerHTML = "⚠️ Tidak dapat memuatkan cuaca.";
-  }
-}
+// --- Fruit Slice Game ---
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreDisplay = document.getElementById("score");
+const resetButton = document.getElementById("resetGame");
 
-// ===================== PRODUK ZURICH TAKAFUL =====================
-
-const produkInfo = {
-  zdrive: {
-    nama: "Z-Drive Assist",
-    info: "Perlindungan menyeluruh untuk kenderaan anda termasuk bantuan tepi jalan, tunda dan kemalangan.",
-  },
-  zmotor: {
-    nama: "Z-Motor",
-    info: "Takaful komprehensif untuk kereta anda meliputi kerosakan, kecurian dan liabiliti pihak ketiga.",
-  },
-  zrider: {
-    nama: "Z-Rider",
-    info: "Perlindungan untuk penunggang motosikal — termasuk kemalangan diri dan kehilangan kenderaan.",
-  },
-  zpa: {
-    nama: "Personal Accident (PA)",
-    info: "Lindungi diri anda dan keluarga daripada risiko kemalangan dengan pampasan tunai segera.",
-  },
-  ztravel: {
-    nama: "Z-Travel",
-    info: "Takaful perjalanan bagi melindungi anda daripada kecemasan, kehilangan bagasi dan kelewatan penerbangan.",
-  },
-  zfirebiz: {
-    nama: "Fire Takaful (Business)",
-    info: "Perlindungan untuk premis perniagaan anda terhadap risiko kebakaran, letupan dan bencana lain.",
-  }
-};
-
-const modal = document.getElementById("modal");
-const produkInfoDiv = document.getElementById("produkInfo");
-const closeModal = document.getElementById("closeModal");
-
-document.querySelectorAll(".produk-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const key = btn.dataset.produk;
-    const p = produkInfo[key];
-    if (p) {
-      produkInfoDiv.innerHTML = `
-        <h3>${p.nama}</h3>
-        <p>${p.info}</p>
-      `;
-      modal.classList.add("show");
-    }
-  });
-});
-
-closeModal.addEventListener("click", () => modal.classList.remove("show"));
-window.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("show"); });
-
-// Borang Quotation
-const quoteForm = document.getElementById("quoteForm");
-quoteForm.addEventListener("submit", e => {
-  e.preventDefault();
-  alert("✅ Permohonan quotation telah dihantar! Kami akan hubungi anda tidak lama lagi.");
-  modal.classList.remove("show");
-  quoteForm.reset();
-});
-
-// ===================== KUIZ =====================
-const quizSection = document.getElementById("quizSection");
-const quizBox = document.getElementById("quizBox");
-const quizQuestion = document.getElementById("quizQuestion");
-const quizOptions = document.getElementById("quizOptions");
-const startQuiz = document.getElementById("startQuiz");
-
-const quizData = [
-  {
-    q: "Apakah maksud 'Takaful'?",
-    o: ["Perlindungan bersama", "Insurans konvensional", "Pinjaman kewangan"],
-    a: 0
-  },
-  {
-    q: "Z-Drive Assist direka untuk?",
-    o: ["Perlindungan rumah", "Bantuan kecemasan kenderaan", "Pelan pelancongan"],
-    a: 1
-  },
-  {
-    q: "Z-Travel memberi perlindungan untuk?",
-    o: ["Kemalangan tempat kerja", "Perjalanan dan bagasi", "Pembelian kereta"],
-    a: 1
-  },
-  {
-    q: "Personal Accident (PA) memberi pampasan untuk?",
-    o: ["Kemalangan diri", "Kecurian kenderaan", "Bencana alam"],
-    a: 0
-  }
-];
-
-let current = 0;
+let fruits = [];
 let score = 0;
+let sliceSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_896b8b71f1.mp3?filename=slice-1.mp3");
 
-startQuiz.addEventListener("click", start);
-
-function start() {
-  current = 0;
-  score = 0;
-  startQuiz.style.display = "none";
-  loadQuestion();
+// Fungsi hasilkan buah rawak
+function randomFruit() {
+  const radius = 20 + Math.random() * 15;
+  return {
+    x: Math.random() * (canvas.width - radius * 2) + radius,
+    y: canvas.height + radius,
+    radius,
+    speedY: 2 + Math.random() * 3,
+    color: `hsl(${Math.random() * 360}, 80%, 60%)`
+  };
 }
 
-function loadQuestion() {
-  const q = quizData[current];
-  quizQuestion.textContent = q.q;
-  quizOptions.innerHTML = "";
-  q.o.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = opt;
-    btn.className = "produk-btn";
-    btn.onclick = () => checkAnswer(i);
-    quizOptions.appendChild(btn);
+// Tambah buah baru
+function spawnFruit() {
+  fruits.push(randomFruit());
+}
+
+// Update & lukis game
+function updateGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  fruits.forEach(fruit => {
+    fruit.y -= fruit.speedY;
+    ctx.beginPath();
+    ctx.arc(fruit.x, fruit.y, fruit.radius, 0, Math.PI * 2);
+    ctx.fillStyle = fruit.color;
+    ctx.fill();
   });
+  fruits = fruits.filter(f => f.y + f.radius > 0);
+  requestAnimationFrame(updateGame);
 }
 
-function checkAnswer(i) {
-  if (i === quizData[current].a) score++;
-  current++;
-  if (current < quizData.length) {
-    loadQuestion();
-  } else {
-    quizQuestion.innerHTML = `🎉 Tamat! Skor anda: <b>${score}/${quizData.length}</b>`;
-    quizOptions.innerHTML = "";
-    startQuiz.textContent = "Main Semula";
-    startQuiz.style.display = "block";
-  }
-}
+// Bila klik potong buah
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  fruits.forEach((fruit, i) => {
+    const dx = x - fruit.x;
+    const dy = y - fruit.y;
+    if (Math.sqrt(dx * dx + dy * dy) < fruit.radius) {
+      fruits.splice(i, 1);
+      sliceSound.currentTime = 0;
+      sliceSound.play();
+      score++;
+      scoreDisplay.textContent = score;
+    }
+  });
+});
 
-// Tahun automatik footer
-document.getElementById("year").textContent = new Date().getFullYear();
+// Butang reset game
+resetButton.addEventListener("click", () => {
+  fruits = [];
+  score = 0;
+  scoreDisplay.textContent = score;
+});
+
+// Mula game
+setInterval(spawnFruit, 1000);
+updateGame();
+showSection('waktuSolat');
