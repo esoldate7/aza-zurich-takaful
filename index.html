@@ -372,372 +372,184 @@ document.getElementById("year").textContent=new Date().getFullYear();
   </div>
 </div>
 
+
 <script>
-/* Fruit Slice Game - Fullscreen Modal
-   - Touch & mouse slicing
-   - Fruits spawn randomly, bombs cause game over
-   - Lightweight physics, no external libs
+/* Fruit Slice Game + Sound FX — BroChat Edition 🔊
+   - Bunyi slice, bom, pop
+   - Semua inline (tak perlu fail luar)
 */
+const rand = (a,b)=>a+Math.random()*(b-a);
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
 
-// ---- Helpers ----
-const rand = (a,b) => a + Math.random()*(b-a);
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+// Sound bank (base64 short)
+const sounds = {
+  slice: new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..."), // slice sound short base64
+  bomb: new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..."), // explosion base64
+  pop: new Audio("data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA...") // pop start
+};
+function playSound(name){ try{ sounds[name].currentTime=0; sounds[name].play(); }catch(e){} }
 
-// ---- DOM refs ----
-const openBtn = document.getElementById('openFruitGame');
-const modal = document.getElementById('fruitModal');
-const canvas = document.getElementById('fruitCanvas');
-const ctx = canvas.getContext('2d', { alpha: true });
-const scoreEl = document.getElementById('fgScore');
-const pauseBtn = document.getElementById('fgPause');
-const restartBtn = document.getElementById('fgRestart');
-const closeBtn = document.getElementById('fgClose');
-const overlay = document.getElementById('fgOverlay');
-const overlayScore = document.getElementById('fgFinalScore');
-const overlayRestart = document.getElementById('fgOverlayRestart');
+const openBtn=document.getElementById('openFruitGame');
+const modal=document.getElementById('fruitModal');
+const canvas=document.getElementById('fruitCanvas');
+const ctx=canvas.getContext('2d',{alpha:true});
+const scoreEl=document.getElementById('fgScore');
+const pauseBtn=document.getElementById('fgPause');
+const restartBtn=document.getElementById('fgRestart');
+const closeBtn=document.getElementById('fgClose');
+const overlay=document.getElementById('fgOverlay');
+const overlayScore=document.getElementById('fgFinalScore');
+const overlayRestart=document.getElementById('fgOverlayRestart');
 
-// ---- Game state ----
-let W=0,H=0, DPR = window.devicePixelRatio || 1;
-let fruits = [];
-let particles = [];
-let slicePath = [];
-let isRunning = false;
-let isPaused = false;
-let score = 0;
-let spawnTimer = 0;
-let spawnInterval = 900; // ms base
-let lastTime = 0;
+let W=0,H=0,DPR=window.devicePixelRatio||1;
+let fruits=[],particles=[],slicePath=[];
+let isRunning=false,isPaused=false,score=0;
+let spawnTimer=0,spawnInterval=900,lastTime=0;
 
-// Fruit types
-const FRUIT_TYPES = [
-  { name:'apple', color:'#ff5252', points:10, radius:28 },
-  { name:'orange', color:'#ff9800', points:12, radius:30 },
-  { name:'watermelon', color:'#4caf50', points:18, radius:36 },
-  { name:'lemon', color:'#ffeb3b', points:9, radius:26 }
+const FRUIT_TYPES=[
+  {name:'apple',color:'#ff5252',points:10,radius:28},
+  {name:'orange',color:'#ff9800',points:12,radius:30},
+  {name:'watermelon',color:'#4caf50',points:18,radius:36},
+  {name:'lemon',color:'#ffeb3b',points:9,radius:26}
 ];
-const BOMB = { name:'bomb', color:'#333', points:0, radius:28 };
+const BOMB={name:'bomb',color:'#333',points:0,radius:28};
 
-// ---- Resize ----
 function resizeCanvas(){
-  DPR = window.devicePixelRatio || 1;
-  W = canvas.clientWidth;
-  H = canvas.clientHeight;
-  canvas.width = Math.floor(W * DPR);
-  canvas.height = Math.floor(H * DPR);
+  DPR=window.devicePixelRatio||1;
+  W=canvas.clientWidth;H=canvas.clientHeight;
+  canvas.width=W*DPR;canvas.height=H*DPR;
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize',resizeCanvas);
 
-// ---- Entities ----
 function spawnFruit(){
-  const chanceBomb = Math.random() < 0.08; // 8% bombs
-  const x = rand(60, W-60);
-  const speedY = rand(220, 360) / 1000; // px/ms initial velocity scale
-  const vx = rand(-60,60) / 1000;
+  const chanceBomb=Math.random()<0.08;
+  const x=rand(60,W-60);
+  const vx=rand(-60,60)/1000;
   if(chanceBomb){
-    fruits.push({
-      type:BOMB,
-      x, y: H + 60,
-      vx, vy: -rand(650, 900),
-      r: BOMB.radius,
-      exploded:false
-    });
-  } else {
-    const t = FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
-    fruits.push({
-      type:t,
-      x, y: H + 60,
-      vx, vy: -rand(600, 900),
-      r: t.radius,
-      cut:false
-    });
+    fruits.push({type:BOMB,x,y:H+60,vx,vy:-rand(650,900),r:BOMB.radius,exploded:false});
+  }else{
+    const t=FRUIT_TYPES[Math.floor(Math.random()*FRUIT_TYPES.length)];
+    fruits.push({type:t,x,y:H+60,vx,vy:-rand(600,900),r:t.radius,cut:false});
   }
 }
-
-// ---- Particles for sliced fruits ----
 function spawnParticles(x,y,color){
   for(let i=0;i<12;i++){
-    particles.push({
-      x, y,
-      vx: rand(-200,200)/1000,
-      vy: rand(-200,0)/1000,
-      life: rand(600,1200),
-      t: 0,
-      color
-    });
+    particles.push({x,y,vx:rand(-200,200)/1000,vy:rand(-200,0)/1000,life:rand(600,1200),t:0,color});
   }
 }
-
-// ---- Drawing ----
 function drawFruit(f){
-  ctx.save();
-  ctx.translate(f.x, f.y);
-  // shadow
-  ctx.beginPath();
-  ctx.arc(6, 6, f.r+4, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
-  ctx.fill();
-
-  // main circle
-  ctx.beginPath();
-  ctx.arc(0,0,f.r,0,Math.PI*2);
-  ctx.fillStyle = f.type.color;
-  ctx.fill();
-
-  // highlight
-  ctx.beginPath();
-  ctx.ellipse(-f.r*0.3, -f.r*0.35, f.r*0.3, f.r*0.18, 0, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(255,255,255,0.22)';
-  ctx.fill();
-
-  // small seed or icon for watermelon
-  if(f.type.name === 'watermelon'){
-    ctx.beginPath();
-    ctx.fillStyle = '#2e7d32';
-    for(let i=0;i<6;i++){
-      ctx.fillRect(-f.r*0.6 + i*6, -4, 3, 8);
-    }
-  }
-  // bomb mark
-  if(f.type.name === 'bomb'){
-    ctx.beginPath();
-    ctx.fillStyle = '#111';
-    ctx.arc(0,0,f.r*0.55,0,Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
+  ctx.save();ctx.translate(f.x,f.y);
+  ctx.beginPath();ctx.arc(6,6,f.r+4,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fill();
+  ctx.beginPath();ctx.arc(0,0,f.r,0,Math.PI*2);
+  ctx.fillStyle=f.type.color;ctx.fill();
+  ctx.beginPath();ctx.ellipse(-f.r*0.3,-f.r*0.35,f.r*0.3,f.r*0.18,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.22)';ctx.fill();
+  if(f.type.name==='bomb'){
+    ctx.beginPath();ctx.arc(0,0,f.r*0.55,0,Math.PI*2);
+    ctx.fillStyle='#111';ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 18px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('💣',0,0);
   }
   ctx.restore();
 }
-
 function drawParticles(dt){
   for(const p of particles){
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 4,0,Math.PI*2);
-    ctx.fillStyle = p.color || 'rgba(255,255,255,0.9)';
-    ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.fill();
   }
 }
-
-// ---- Physics & update ----
 function updateEntities(dt){
-  // fruits
   for(const f of fruits){
-    // apply gravity
-    f.vy += 1600 * (dt/1000); // px/s^2 scaled
-    f.x += f.vx * dt;
-    f.y += f.vy * dt;
+    f.vy+=1600*(dt/1000);f.x+=f.vx*dt;f.y+=f.vy*dt;
   }
-  // particles
   for(const p of particles){
-    p.vy += 1200 * (dt/1000);
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.t += dt;
+    p.vy+=1200*(dt/1000);p.x+=p.vx*dt;p.y+=p.vy*dt;p.t+=dt;
   }
-  // remove dead particles
-  particles = particles.filter(p => p.t < p.life);
-
-  // remove fruits that fell below screen
-  fruits = fruits.filter(f => {
-    if(f.y - f.r > H + 80){
-      // if fruit not cut, it's missed - subtract small penalty or ignore
-      return false;
-    }
-    return true;
-  });
+  particles=particles.filter(p=>p.t<p.life);
+  fruits=fruits.filter(f=>f.y-f.r<H+80);
 }
-
-// ---- Slice detection ----
-function pointCircleIntersect(px, py, cx, cy, r){
-  const dx = px - cx;
-  const dy = py - cy;
-  return (dx*dx + dy*dy) <= (r*r);
+function pointCircleIntersect(px,py,cx,cy,r){
+  const dx=px-cx,dy=py-cy;return dx*dx+dy*dy<=r*r;
 }
-
 function checkSliceCollision(){
-  if(slicePath.length < 2) return;
-  // reduce path to last few points for performance
-  const path = slicePath.slice(-6);
+  if(slicePath.length<2)return;
+  const path=slicePath.slice(-6);
   for(const f of fruits){
-    if(f.cut || f.type.name === 'bomb' && f.exploded) continue;
-    // check any segment intersects circle (approx by testing segment midpoint)
+    if(f.cut||(f.type.name==='bomb'&&f.exploded))continue;
     for(let i=1;i<path.length;i++){
-      const x1 = path[i-1].x, y1 = path[i-1].y;
-      const x2 = path[i].x, y2 = path[i].y;
-      // sample a few points along segment
+      const x1=path[i-1].x,y1=path[i-1].y,x2=path[i].x,y2=path[i].y;
       for(let t=0;t<=1;t+=0.25){
-        const sx = x1 + (x2-x1)*t;
-        const sy = y1 + (y2-y1)*t;
-        if(pointCircleIntersect(sx, sy, f.x, f.y, f.r)){
-          // hit
-          if(f.type.name === 'bomb'){
-            // bomb explode -> game over
-            endGame(true);
-            f.exploded = true;
-            return;
-          } else {
+        const sx=x1+(x2-x1)*t,sy=y1+(y2-y1)*t;
+        if(pointCircleIntersect(sx,sy,f.x,f.y,f.r)){
+          if(f.type.name==='bomb'){
+            playSound('bomb');endGame(true);f.exploded=true;return;
+          }else{
             if(!f.cut){
-              f.cut = true;
-              score += f.type.points;
-              scoreEl.textContent = score;
-              spawnParticles(f.x, f.y, f.type.color);
+              f.cut=true;score+=f.type.points;scoreEl.textContent=score;
+              playSound('slice');spawnParticles(f.x,f.y,f.type.color);
             }
           }
         }
       }
     }
   }
-  // remove cut fruits (but let particles display)
-  fruits = fruits.filter(f => !(f.cut));
+  fruits=fruits.filter(f=>!f.cut);
 }
-
-// ---- Render loop ----
 function render(time){
-  if(!isRunning) return;
-  const dt = Math.min(40, time - lastTime);
-  lastTime = time;
-
+  if(!isRunning)return;
+  const dt=Math.min(40,time-lastTime);lastTime=time;
   if(!isPaused){
-    // update spawn timer
-    spawnTimer += dt;
-    if(spawnTimer > spawnInterval){
-      spawnTimer = 0;
-      spawnInterval = rand(600, 1100); // vary spawn rate
-      spawnFruit();
-    }
-    updateEntities(dt);
-    checkSliceCollision();
+    spawnTimer+=dt;
+    if(spawnTimer>spawnInterval){spawnTimer=0;spawnInterval=rand(600,1100);spawnFruit();}
+    updateEntities(dt);checkSliceCollision();
   }
-
-  // clear
   ctx.clearRect(0,0,W,H);
-
-  // draw fruits
-  for(const f of fruits) drawFruit(f);
-
-  // draw particles
+  for(const f of fruits)drawFruit(f);
   drawParticles(dt);
-
-  // draw slice path
   if(slicePath.length){
-    ctx.beginPath();
-    ctx.moveTo(slicePath[0].x, slicePath[0].y);
-    for(let i=1;i<slicePath.length;i++) ctx.lineTo(slicePath[i].x, slicePath[i].y);
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-    ctx.lineCap = 'round';
-    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(slicePath[0].x,slicePath[0].y);
+    for(let i=1;i<slicePath.length;i++)ctx.lineTo(slicePath[i].x,slicePath[i].y);
+    ctx.lineWidth=6;ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineCap='round';ctx.stroke();
   }
-
   requestAnimationFrame(render);
 }
+let drawing=false;
+function addSlicePoint(x,y){slicePath.push({x,y,t:Date.now()});if(slicePath.length>20)slicePath.shift();}
+function startDrawing(x,y){drawing=true;slicePath=[{x,y,t:Date.now()}];}
+function stopDrawing(){drawing=false;setTimeout(()=>slicePath=[],120);}
+function handlePointerMove(x,y){if(!drawing)return;addSlicePoint(x,y);}
+canvas.addEventListener('mousedown',e=>startDrawing(e.offsetX,e.offsetY));
+canvas.addEventListener('mousemove',e=>handlePointerMove(e.offsetX,e.offsetY));
+window.addEventListener('mouseup',()=>stopDrawing());
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();startDrawing(t.clientX-r.left,t.clientY-r.top);});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();handlePointerMove(t.clientX-r.left,t.clientY-r.top);});
+canvas.addEventListener('touchend',e=>{e.preventDefault();stopDrawing();});
 
-// ---- Input handling (touch & mouse) ----
-let drawing = false;
-function addSlicePoint(x,y){
-  slicePath.push({x,y, t: Date.now()});
-  // keep path short
-  if(slicePath.length > 20) slicePath.shift();
-}
-function startDrawing(x,y){
-  drawing = true;
-  slicePath = [{x,y, t:Date.now()}];
-  addSlicePoint(x,y);
-}
-function stopDrawing(){
-  drawing = false;
-  // fade slice
-  setTimeout(()=> slicePath = [], 120);
-}
-function handlePointerMove(x,y){
-  if(!drawing) return;
-  addSlicePoint(x,y);
-}
-
-// mouse
-canvas.addEventListener('mousedown', e=>{
-  startDrawing(e.offsetX, e.offsetY);
-});
-canvas.addEventListener('mousemove', e=>{
-  handlePointerMove(e.offsetX, e.offsetY);
-});
-window.addEventListener('mouseup', e=> stopDrawing());
-
-// touch
-canvas.addEventListener('touchstart', e=>{
-  e.preventDefault();
-  const t = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  startDrawing(t.clientX - rect.left, t.clientY - rect.top);
-});
-canvas.addEventListener('touchmove', e=>{
-  e.preventDefault();
-  const t = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  handlePointerMove(t.clientX - rect.left, t.clientY - rect.top);
-});
-canvas.addEventListener('touchend', e=>{
-  e.preventDefault();
-  stopDrawing();
-});
-
-// ---- Game control ----
 function startGame(){
-  // reset
-  fruits = []; particles = []; slicePath = [];
-  score = 0; scoreEl.textContent = score;
-  spawnTimer = 0; spawnInterval = 900;
-  isRunning = true; isPaused = false;
-  overlay.classList.remove('show');
-  lastTime = performance.now();
-  requestAnimationFrame(render);
+  fruits=[];particles=[];slicePath=[];score=0;scoreEl.textContent=score;
+  spawnTimer=0;spawnInterval=900;isRunning=true;isPaused=false;
+  overlay.classList.remove('show');lastTime=performance.now();
+  playSound('pop');requestAnimationFrame(render);
 }
-function pauseGame(){
-  isPaused = !isPaused;
-  pauseBtn.textContent = isPaused ? '▶️ Main' : '⏸️ Jeda';
-}
-function endGame(isBomb=false){
-  isRunning = false;
-  overlayScore.textContent = score;
-  document.getElementById('fgOverlayTitle').textContent = isBomb ? 'Boom! Game Over 💥' : 'Game Over';
+function pauseGame(){isPaused=!isPaused;pauseBtn.textContent=isPaused?'▶️ Main':'⏸️ Jeda';}
+function endGame(bomb=false){
+  isRunning=false;overlayScore.textContent=score;
+  document.getElementById('fgOverlayTitle').textContent=bomb?'Boom! 💣':'Game Over';
   overlay.classList.add('show');
 }
-
-// ---- UI bindings ----
-openBtn.addEventListener('click', ()=>{
-  modal.classList.add('show');
-  resizeCanvas();
-  startGame();
-});
-
-closeBtn.addEventListener('click', ()=>{
-  modal.classList.remove('show');
-  isRunning = false;
-});
-restartBtn.addEventListener('click', ()=> {
-  startGame();
-});
-pauseBtn.addEventListener('click', pauseGame);
-overlayRestart.addEventListener('click', ()=> {
-  overlay.classList.remove('show');
-  startGame();
-});
-
-// Init canvas size on open
+openBtn.addEventListener('click',()=>{modal.classList.add('show');resizeCanvas();startGame();});
+closeBtn.addEventListener('click',()=>{modal.classList.remove('show');isRunning=false;});
+restartBtn.addEventListener('click',()=>startGame());
+pauseBtn.addEventListener('click',pauseGame);
+overlayRestart.addEventListener('click',()=>{overlay.classList.remove('show');startGame();});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('show')){modal.classList.remove('show');isRunning=false;}});
 resizeCanvas();
-
-// Accessibility: close modal with Esc
-window.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape' && modal.classList.contains('show')){
-    modal.classList.remove('show');
-    isRunning = false;
-  }
-});
 </script>
+  
+  
 <!-- ========== END FRUIT SLICE BLOCK ========== -->
   
 </body>
