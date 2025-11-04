@@ -1,31 +1,25 @@
 body {
   margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #0099ff, #00d4ff);
-  color: white;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #0077c2, #e0f7fa);
+  color: #222;
   text-align: center;
 }
 
 header {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 15px;
-  border-bottom: 2px solid rgba(255,255,255,0.2);
+  background: #0066a1;
+  color: white;
+  padding: 15px 10px;
 }
 
 nav button {
-  background: rgba(255,255,255,0.2);
+  background: white;
   border: none;
   margin: 5px;
   padding: 10px 15px;
   border-radius: 10px;
-  color: #fff;
   cursor: pointer;
-  transition: all 0.3s;
-}
-
-nav button:hover {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.05);
+  font-weight: bold;
 }
 
 section {
@@ -35,60 +29,73 @@ section {
 
 section.active {
   display: block;
-  animation: fadeIn 0.6s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-#liteGames {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #007bff, #00bcd4);
-}
-
-#gameCanvas {
-  margin-top: 20px;
-  border: 3px solid white;
+.product-card {
+  background: #ffffffc2;
   border-radius: 15px;
-  background: rgba(255,255,255,0.1);
+  margin: 10px auto;
+  padding: 15px;
+  width: 85%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.scoreboard {
-  font-size: 1.2em;
-  margin-top: 10px;
-  background: rgba(255,255,255,0.15);
-  display: inline-block;
-  padding: 5px 15px;
-  border-radius: 15px;
-}
-
-.btn {
-  margin-top: 15px;
-  padding: 10px 20px;
+.btn-info, .btn-quote {
+  background: #0077c2;
   border: none;
-  background: white;
-  color: #007bff;
-  border-radius: 10px;
-  font-weight: bold;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s;
+  margin: 4px;
 }
 
-.btn:hover {
-  background: #007bff;
-  color: white;
+.btn-quote {
+  background: #00a8a8;
 }
 
 footer {
-  background: rgba(255,255,255,0.1);
+  background: #004b72;
+  color: white;
   padding: 10px;
-  width: 100%;
+  margin-top: 30px;
+  font-size: 0.9em;
 }
 
-.hint {
-  font-size: 0.9em;
-  opacity: 0.8;
-  margin-top: 10px;
+/* GAME STYLING */
+#fruit-game, #balloon-game {
+  margin-top: 20px;
+  position: relative;
+  height: 450px;
+  overflow: hidden;
+  border: 2px solid #0066a1;
+  border-radius: 15px;
+  background: #f0f8ff;
+}
+
+.fruit, .balloon {
+  position: absolute;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.3s;
+}
+
+.score-display {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-weight: bold;
+  background: #ffffffb5;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+.game-buttons button {
+  background: #00a8a8;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px;
 }
