@@ -3,457 +3,632 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AZA Zurich Takaful AM — Info & Mini Apps (Fixed)</title>
+  <title>AZA Zurich Takaful — Info & Fun</title>
   <style>
-    :root{--blue1:#0b3b83;--blue2:#1976d2;--card:#ffffff;--muted:#4b6b86}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Poppins,Inter,system-ui; background:linear-gradient(180deg,var(--blue1),var(--blue2));color:#03223f;min-height:100vh}
-    .wrap{max-width:980px;margin:18px auto;padding:12px}
-    .topcard{background:rgba(255,255,255,0.06);padding:14px;border-radius:12px;color:white;display:flex;gap:12px;align-items:center}
-    .logo{width:56px;height:56px;border-radius:10px;background:white;padding:6px;object-fit:contain}
-    h1{margin:0;font-size:18px}
-    .lead{margin:4px 0 0 0;opacity:.95;font-size:13px}
-    .card{background:var(--card);border-radius:12px;margin-top:14px;padding:14px;box-shadow:0 10px 30px rgba(3,20,60,0.10)}
-    select,button,input,textarea{padding:10px 12px;border-radius:10px;border:1px solid rgba(3,20,60,.08);font-size:15px}
+    :root{
+      --blue1:#0d47a1; --blue2:#1976d2; --card-bg: rgba(255,255,255,0.08);
+      --accent:#00bcd4;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Poppins,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      background: linear-gradient(180deg,var(--blue1),var(--blue2));
+      color:#fff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+    .wrap{max-width:980px;margin:18px auto;padding:12px;}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    header .brand{display:flex;gap:10px;align-items:center}
+    .logo {width:42px;height:42px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--blue1);font-weight:700}
+    h1{font-size:18px;margin:0}
+    p.lead{margin:2px 0 0 0;opacity:0.9;font-size:13px}
+
+    /* cards */
+    .card{background:var(--card-bg);border-radius:14px;padding:14px;margin-top:14px;box-shadow:0 6px 18px rgba(0,0,0,0.18)}
+    .inline-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    select, button, input, textarea{font-size:15px;border-radius:10px;padding:10px;border:none;outline:none}
     select{background:white;color:var(--blue1)}
-    .btn-main{background:var(--blue1);color:white;border:0;padding:10px 14px;border-radius:10px;cursor:pointer}
-    .btn-ghost{background:transparent;border:1px solid rgba(3,20,60,.08);cursor:pointer}
-    .prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px}
-    .prod{padding:12px;border-radius:10px;background:linear-gradient(180deg,#ffffff,#f6f8fb);box-shadow:0 6px 18px rgba(3,20,60,0.04)}
-    .status{padding:10px;border-radius:10px;background:#f7fbff;color:#073763;border:1px solid rgba(3,20,60,0.04);margin-top:12px}
-    .error{color:#b00020}
-    .modal{position:fixed;inset:0;background:rgba(3,10,25,0.6);display:flex;align-items:center;justify-content:center;padding:16px;visibility:hidden;opacity:0;transition:200ms;z-index:9999}
-    .modal.show{visibility:visible;opacity:1}
-    .modal-box{background:white;border-radius:12px;width:100%;max-width:720px;padding:14px;box-shadow:0 20px 60px rgba(3,20,60,0.2);position:relative}
-    .modal .close{position:absolute;right:12px;top:8px;font-size:22px;cursor:pointer;border:0;background:transparent;color:var(--blue1)}
-    .game-canvas{width:100%;height:420px;background:linear-gradient(180deg,#f8fbff,#eaf6ff);border-radius:10px;position:relative;overflow:hidden}
-    .score-tag{position:absolute;left:10px;top:10px;background:white;padding:6px 10px;border-radius:999px;font-weight:700;box-shadow:0 6px 14px rgba(3,20,60,0.06);z-index:50}
-    .fruit,.balloon{position:absolute;touch-action:none;user-select:none;cursor:pointer;z-index:40}
-    @media(max-width:520px){.wrap{padding:10px}.logo{width:48px;height:48px}}
+    button.cta{background:#fff;color:var(--blue1);font-weight:700;border-radius:10px;padding:10px 14px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#fff}
+
+    /* product list */
+    .produk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+    .produk-card{background:rgba(255,255,255,0.06);padding:12px;border-radius:10px;cursor:pointer}
+    .produk-card h4{margin:0 0 6px 0}
+    .produk-card p{margin:0;font-size:13px;opacity:0.95}
+
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1200;padding:18px}
+    .modal.show{display:flex}
+    .modal .box{width:100%;max-width:560px;background:#fff;color:var(--blue1);border-radius:12px;padding:18px;position:relative}
+    .modal .close{position:absolute;right:12px;top:10px;font-size:18px;cursor:pointer}
+    .modal h3{margin:0 0 8px 0}
+    .modal p{margin:0 0 10px 0;color:#333}
+
+    /* quiz */
+    #quizSection .btn, .btn{cursor:pointer;border-radius:10px;padding:10px 14px;border:none}
+    .quiz-options{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
+    /* fruit modal fullscreen */
+    #fruitModal{position:fixed;inset:0;background:linear-gradient(180deg,rgba(2,18,78,0.98),rgba(3,54,120,0.98));display:none;align-items:center;justify-content:center;z-index:1300}
+    #fruitModal.show{display:flex}
+    .fruit-wrap{width:100%;height:100%;display:grid;grid-template-rows:auto 1fr auto;}
+    .fruit-top{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;color:#fff}
+    #fruitCanvas{width:100%;height:calc(100vh - 140px);display:block;touch-action:none}
+    .fruit-bottom{display:flex;gap:10px;justify-content:center;padding:12px}
+    .fg-btn{padding:10px 14px;border-radius:10px;border:none;background:#fff;color:var(--blue1);font-weight:700;cursor:pointer}
+
+    /* overlay game over */
+    .fg-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.56);padding:18px;border-radius:12px;color:#fff;text-align:center;display:none}
+    .fg-overlay.show{display:block}
+
+    footer{margin-top:20px;text-align:center;opacity:0.85;font-size:13px}
+    small.muted{opacity:0.8;font-size:12px;display:block;margin-top:8px}
+
+    /* responsive */
+    @media (max-width:640px){
+      header{flex-direction:column;align-items:flex-start;gap:8px}
+      .logo{width:38px;height:38px}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header class="topcard">
-      <!-- Put path to your logo here (replace 'logo-zurich.svg' if needed) -->
-      <img class="logo" src="zurich_logo_takaful.png" alt="Zurich Logo (replace path if needed)" />
-      <div>
-        <h1>☕ Selamat Datang ke AZA Zurich Takaful AM</h1>
-        <div class="lead">Info produk Zurich, waktu solat, cuaca, kuiz & mini games</div>
+    <header>
+      <div class="brand">
+        <div class="logo">AZA</div>
+        <div>
+          <h1>AZA Zurich Takaful AM</h1>
+          <p class="lead">Waktu solat, produk & hiburan ringan — semua di satu app</p>
+        </div>
+      </div>
+      <div class="inline-row">
+        <button id="openGamesBtn" class="ghost">🎮 Lite Games</button>
+        <button id="openQuizBtn" class="ghost">🧠 Kuiz</button>
       </div>
     </header>
 
-    <section class="card" id="mainCard" style="margin-top:14px">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <div style="flex:1;min-width:220px">
-          <h3 style="margin:0;color:var(--blue1)">🕌 Waktu Solat Semasa</h3>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
-            <select id="negeriSelect">
-              <option value="">-- Pilih Negeri --</option>
-              <option value="WLY01">Kuala Lumpur</option>
-              <option value="WLY02">Putrajaya</option>
-              <option value="SGR01">Selangor</option>
-              <option value="PNG01">Pulau Pinang</option>
-              <option value="PRK01">Perak</option>
-              <option value="JHR01">Johor</option>
-              <option value="KDH01">Kedah</option>
-              <option value="KTN01">Kelantan</option>
-              <option value="MLK01">Melaka</option>
-              <option value="NSN01">Negeri Sembilan</option>
-              <option value="PHG01">Pahang</option>
-              <option value="PLS01">Perlis</option>
-              <option value="SBH01">Sabah</option>
-              <option value="SWK01">Sarawak</option>
-              <option value="TRG01">Terengganu</option>
-              <option value="LBN01">Labuan</option>
-            </select>
-            <button id="btnDetect" class="btn-ghost">📍 Detect Lokasi</button>
-          </div>
-          <div id="solatResult" class="status" style="margin-top:10px">❗ Sila pilih negeri atau detect lokasi</div>
+    <!-- ===== Waktu Solat & Cuaca ===== -->
+    <section id="waktuCard" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;">
+          <h3 style="margin:0 0 6px 0">🕌 Waktu Solat Semasa</h3>
+          <p style="margin:0;font-size:13px;opacity:0.95">Pilih negeri atau izinkan akses lokasi.</p>
         </div>
-
-        <div style="width:280px">
-          <h3 style="margin:0;color:var(--blue1)">☁️ Cuaca</h3>
-          <div id="cuacaResult" class="status" style="margin-top:8px">Memuatkan cuaca…</div>
-
-          <div style="margin-top:12px">
-            <button id="openProducts" class="btn-main" style="width:100%;margin-top:6px">💼 Produk Zurich</button>
-          </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="negeriSelect" aria-label="Pilih negeri">
+            <option value="">-- Pilih Negeri --</option>
+            <option value="WLY01">Kuala Lumpur</option>
+            <option value="WLY02">Putrajaya</option>
+            <option value="SGR01">Selangor</option>
+            <option value="PNG01">Pulau Pinang</option>
+            <option value="PRK01">Perak</option>
+            <option value="JHR01">Johor</option>
+            <option value="KTN01">Kelantan</option>
+            <option value="KDH01">Kedah</option>
+            <option value="MLK01">Melaka</option>
+            <option value="NSN01">Negeri Sembilan</option>
+            <option value="PHG01">Pahang</option>
+            <option value="PLS01">Perlis</option>
+            <option value="SBH01">Sabah</option>
+            <option value="SWK01">Sarawak</option>
+            <option value="TRG01">Terengganu</option>
+            <option value="LBN01">Labuan</option>
+          </select>
+          <button id="btnDetect" class="cta">📍 Auto Detect</button>
         </div>
       </div>
 
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button id="openQuiz" class="btn-ghost">🎯 Kuiz</button>
-        <button id="openFruit" class="btn-ghost">🍉 Fruit Slice</button>
-        <button id="openBalloon" class="btn-ghost">🎈 Balloon Pop</button>
+      <div id="solatResult" style="margin-top:12px">Sila pilih negeri untuk paparan waktu solat.</div>
+      <div id="cuacaResult" style="margin-top:10px;font-size:14px;opacity:0.95">Memuatkan cuaca…</div>
+      <small class="muted">Sumber waktu solat: e-Solat (JAKIM). Cuaca: Open-Meteo.</small>
+    </section>
+
+    <!-- ===== Produk Zurich ===== -->
+    <section id="produkCard" class="card">
+      <h3>💼 Produk Zurich Takaful</h3>
+      <div class="produk-grid" id="produkGrid">
+        <!-- generated -->
       </div>
     </section>
 
-    <footer style="margin-top:12px;color:white;text-align:center">© <span id="year"></span> AZA Zurich Takaful AM</footer>
+    <!-- ===== Kuiz ===== -->
+    <section id="quizSection" class="card">
+      <h3>🎯 Kuiz Zurich Takaful</h3>
+      <p style="margin:0 0 8px 0;font-size:13px">Uji pengetahuan anda — jawapan betul akan terus ke soalan seterusnya.</p>
+      <div id="quizBox">
+        <p id="quizQuestion" style="font-weight:700">Tekan "Mula Kuiz" untuk mula.</p>
+        <div id="quizOptions" class="quiz-options"></div>
+        <div style="margin-top:10px">
+          <button id="startQuiz" class="cta">Mula Kuiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Lite Games Launcher (still page scrollable) ===== -->
+    <section id="gamesCard" class="card">
+      <h3>🎮 Lite Games</h3>
+      <p style="margin:0 0 8px 0;font-size:13px">Main sekejap — santai. Tekan butang untuk buka Fruit Slice fullscreen.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="openFruitGame" class="cta">🍉 Fruit Slice</button>
+      </div>
+    </section>
+
+    <footer>
+      © <span id="year"></span> AZA Zurich Takaful AM — Dibina oleh BroChat AzA
+    </footer>
   </div>
 
-  <!-- PRODUCTS MODAL (close button included) -->
-  <div id="prodModal" class="modal" aria-hidden="true">
-    <div class="modal-box">
-      <button class="close" id="closeProd">&times;</button>
-      <h3>💼 Produk Zurich Takaful</h3>
-      <div id="prodGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px"></div>
+  <!-- ===== Modal Produk (info + request form) ===== -->
+  <div id="modalProduk" class="modal" aria-hidden="true">
+    <div class="box" role="dialog" aria-modal="true">
+      <span class="close" id="closeProduk">&times;</span>
+      <div id="produkInfoBox"></div>
+      <hr />
+      <form id="quoteForm">
+        <h3>🧾 Request Quotation</h3>
+        <label>Nama penuh</label><br>
+        <input id="q_nama" type="text" required placeholder="Contoh: Ahmad bin Ali" style="width:100%;margin-top:6px" />
+        <label>No. Telefon</label><br>
+        <input id="q_tel" type="tel" required placeholder="Contoh: 0123456789" style="width:100%;margin-top:6px" />
+        <label>Email</label><br>
+        <input id="q_email" type="email" required placeholder="email@contoh.com" style="width:100%;margin-top:6px" />
+        <label>Mesej (optional)</label><br>
+        <textarea id="q_msg" rows="3" style="width:100%;margin-top:6px"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button type="submit" class="cta">📲 Hantar ke WhatsApp</button>
+          <button type="button" id="cancelQuote" class="ghost">Batal</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- QUIZ MODAL -->
-  <div id="quizModal" class="modal" aria-hidden="true">
-    <div class="modal-box" style="max-width:520px">
-      <button class="close" id="closeQuiz">&times;</button>
-      <h3>🎯 Kuiz: Takaful & Kenderaan</h3>
-      <div id="quizContent" style="margin-top:8px"></div>
-    </div>
-  </div>
-
-  <!-- FRUIT MODAL -->
-  <div id="fruitModal" class="modal" aria-hidden="true">
-    <div class="modal-box" style="max-width:720px">
-      <button class="close" id="closeFruit">&times;</button>
-      <h3>🍉 Fruit Slice</h3>
-      <div class="game-canvas" id="fruitArea">
-        <div class="score-tag" id="fruitScore">Score: 0</div>
+  <!-- ===== Fruit Slice Modal Fullscreen ===== -->
+  <div id="fruitModal" aria-hidden="true">
+    <div class="fruit-wrap">
+      <div class="fruit-top">
+        <div style="font-weight:700">🍉 Fruit Slice — BroChat</div>
+        <div style="font-weight:700">Skor: <span id="fgScore">0</span></div>
       </div>
-      <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
-        <button id="fruitRestart" class="btn-ghost">🔁 Mula Semula</button>
-        <button id="fruitStop" class="btn-ghost">⏹ Henti</button>
+      <canvas id="fruitCanvas"></canvas>
+      <div class="fruit-bottom">
+        <button id="fgPause" class="fg-btn">⏸️ Jeda</button>
+        <button id="fgRestart" class="fg-btn">🔁 Restart</button>
+        <button id="fgClose" class="fg-btn">✖ Tutup</button>
       </div>
-    </div>
-  </div>
-
-  <!-- BALLOON MODAL -->
-  <div id="balloonModal" class="modal" aria-hidden="true">
-    <div class="modal-box" style="max-width:720px">
-      <button class="close" id="closeBall">&times;</button>
-      <h3>🎈 Balloon Pop</h3>
-      <div class="game-canvas" id="balloonArea">
-        <div class="score-tag" id="ballScore">Score: 0</div>
-      </div>
-      <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
-        <button id="ballRestart" class="btn-ghost">🔁 Mula Semula</button>
-        <button id="ballStop" class="btn-ghost">⏹ Henti</button>
+      <div id="fgOverlay" class="fg-overlay" role="alertdialog" aria-hidden="true">
+        <h2 id="fgOverlayTitle">Game Over</h2>
+        <p>Skor anda: <strong id="fgFinalScore">0</strong></p>
+        <button id="fgOverlayRestart" class="fg-btn">Main Semula</button>
       </div>
     </div>
   </div>
 
 <script>
-/* Updated AZA app script — fixes:
-   - Putrajaya time adjust (-1 hour)
-   - Fruit slicing improved (pointermove detection + elementFromPoint)
-   - Logo present (replace file if needed)
-   - Sound preload + auto-play on open (option A)
-   - Products modal close button fixed
-*/
+/* ====================================================
+   Single-file app script — safe init after DOMContentLoaded
+   Features:
+   - Waktu solat (dropdown + auto-detect via geolocation)
+   - Cuaca (Open-Meteo)
+   - Produk modal + Request form -> WhatsApp (0192506999)
+   - Kuiz interactive
+   - Fruit Slice game (fullscreen modal)
+   ==================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  // ---- util
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const WA_NUMBER = '60192506999'; // Bro's WA in international format without +
 
-(function(){
-  const $ = id => document.getElementById(id);
-  $('year') && ($('year').textContent = new Date().getFullYear());
-
-  // --- sounds (preload) ---
-  const soundClick = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_609a6cdd0a.mp3?filename=click.mp3');
-  const soundSlice = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_0c1bdeef54.mp3?filename=knife-slice-1.mp3');
-  const soundPop = new Audio('https://cdn.pixabay.com/download/audio/2022/03/22/audio_5b5cfa5b4f.mp3?filename=balloon-pop.mp3');
-  [soundClick, soundSlice, soundPop].forEach(s => { s.preload = 'auto'; s.volume = 0.9; });
-
-  function tryPlay(s) { s.currentTime = 0; s.play().catch(()=>{}); }
-
-  // --- Products ---
-  const produk = [
-    {id:'zdrive', title:'Z-Drive Assist', info:'Bantuan tepi jalan 24/7, towing & pembaikan kecemasan.'},
-    {id:'zmotor', title:'Z-Motor', info:'Pelan Takaful Motor: perlindungan kemalangan, kebakaran & kecurian.'},
-    {id:'zrider', title:'Z-Rider', info:'Takaful untuk penunggang motosikal & skuter.'},
-    {id:'ztravel', title:'Z-Travel', info:'Perlindungan perjalanan: kelewatan, kehilangan bagasi & kecemasan perubatan.'},
-    {id:'zpa', title:'Personal Accident', info:'Perlindungan 24/7 untuk kemalangan diri.'},
-    {id:'zfire', title:'Fire Takaful (Business)', info:'Perlindungan premis perniagaan daripada kebakaran & bencana.'}
-  ];
-  const prodGrid = $('prodGrid');
-  produk.forEach(p => {
-    const el = document.createElement('div'); el.className='prod';
-    el.innerHTML = `<h4>${p.title}</h4><p>${p.info}</p>`;
-    const infoBtn = document.createElement('button'); infoBtn.className='btn-ghost'; infoBtn.textContent='Maklumat';
-    infoBtn.addEventListener('click', ()=> { alert(`${p.title}\n\n${p.info}`); tryPlay(soundClick); });
-    const quoteBtn = document.createElement('button'); quoteBtn.className='btn-main'; quoteBtn.style.marginLeft='8px'; quoteBtn.textContent='Request Quotation';
-    quoteBtn.addEventListener('click', ()=> {
-      const name = prompt('Nama penuh (untuk quotation):') || '';
-      const tel = prompt('No. telefon:') || '';
-      const text = encodeURIComponent(`Assalamualaikum, saya nak quotation untuk ${p.title}.\nNama: ${name}\nTel: ${tel}`);
-      window.open(`https://wa.me/60192506999?text=${text}`, '_blank');
-      tryPlay(soundClick);
-    });
-    el.appendChild(infoBtn); el.appendChild(quoteBtn);
-    prodGrid.appendChild(el);
+  // ---- header buttons
+  $('#year').textContent = new Date().getFullYear();
+  $('#openGamesBtn').addEventListener('click', () => {
+    window.scrollTo({top: document.getElementById('gamesCard').offsetTop - 10, behavior:'smooth'});
+  });
+  $('#openQuizBtn').addEventListener('click', () => {
+    window.scrollTo({top: document.getElementById('quizSection').offsetTop - 10, behavior:'smooth'});
   });
 
-  // open/close products modal
-  $('openProducts').addEventListener('click', ()=> { $('prodModal').classList.add('show'); tryPlay(soundClick); });
-  $('closeProd').addEventListener('click', ()=> { $('prodModal').classList.remove('show'); });
+  /* =========================
+     WAKTU SOLAT & CUACA
+     ========================= */
+  const negeriSelect = $('#negeriSelect');
+  const solatResult = $('#solatResult');
+  const cuacaResult = $('#cuacaResult');
+  const btnDetect = $('#btnDetect');
 
-  // close when click outside
-  $('prodModal').addEventListener('click', (e)=> { if (e.target === $('prodModal')) $('prodModal').classList.remove('show'); });
-
-  // --- WAKTU SOLAT + fallback + Putrajaya fix (-1 hour) ---
-  const zoneCoords = {
+  // coords by zone code
+  const COORDS = {
     "WLY01":[3.139,101.6869],"WLY02":[2.9265,101.6965],"SGR01":[3.0738,101.5183],"PNG01":[5.4164,100.3327],
     "PRK01":[4.5975,101.0901],"JHR01":[1.4927,103.7414],"KTN01":[6.1254,102.2381],"KDH01":[6.1184,100.3685],
     "MLK01":[2.1896,102.2501],"NSN01":[2.7258,101.9424],"PHG01":[3.8126,103.3256],"PLS01":[6.4447,100.2046],
-    "SBH01":[5.978,116.0753],"SWK01":[1.5533,110.3592],"TRG01":[5.3302,103.1408],"LBN01":[5.2831,115.2308}
+    "SBH01":[5.978,116.0753],"SWK01":[1.5533,110.3592],"TRG01":[5.3302,103.1408],"LBN01":[5.2831,115.2308]
   };
 
-  function adjustTimeString(str, deltaHours){
-    // expect "HH:MM" or "HH:MM:SS" sometimes; operate using Date today
-    const parts = (str || '').split(':');
-    const now = new Date();
-    if (!parts[0]) return str;
-    now.setHours(Number(parts[0]), Number(parts[1]||0), Number(parts[2]||0), 0);
-    now.setHours(now.getHours() + deltaHours);
-    return now.toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit'});
-  }
-  function adjustEpoch(ts, deltaHours){
-    if (!ts) return ts;
-    const n = Number(ts) - (deltaHours * 3600);
-    return n;
-  }
-
-  async function fetchWaktu(zone){
-    const el = $('solatResult'); el.textContent = '⏳ Memuatkan waktu solat...';
-    if (!zone) { el.textContent = 'Sila pilih negeri.'; return; }
-    try{
-      const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
-      const j = await r.json();
-      if (j && j.prayerTime && j.prayerTime[0]) {
-        const d = j.prayerTime[0];
-        // Putrajaya fix: if zone WLY02, times from e-solat appear +1h late for your observation -> subtract 1 hour
-        if (zone === 'WLY02') {
-          el.innerHTML = `<strong>Zon: ${j.zone || zone}</strong><br>
-            🌅 Subuh: <b>${adjustTimeString(d.fajr, -1)}</b> ▪ 🕌 Zohor: <b>${adjustTimeString(d.dhuhr, -1)}</b><br>
-            🌇 Asar: <b>${adjustTimeString(d.asr, -1)}</b> ▪ 🌆 Maghrib: <b>${adjustTimeString(d.maghrib, -1)}</b> ▪ 🌃 Isyak: <b>${adjustTimeString(d.isha, -1)}</b><br>
-            <small>${d.date || ''}</small>`;
-        } else {
-          el.innerHTML = `<strong>Zon: ${j.zone || zone}</strong><br>
-            🌅 Subuh: <b>${d.fajr}</b> ▪ 🕌 Zohor: <b>${d.dhuhr}</b><br>
-            🌇 Asar: <b>${d.asr}</b> ▪ 🌆 Maghrib: <b>${d.maghrib}</b> ▪ 🌃 Isyak: <b>${d.isha}</b><br>
-            <small>${d.date || ''}</small>`;
-        }
-        return;
-      }
-      throw new Error('No eSolat data');
-    } catch (err) {
-      // fallback - epoch based
-      try {
-        const r2 = await fetch(`https://api.waktusolat.app/v2/solat/${zone}`);
-        const j2 = await r2.json();
-        if (j2 && j2.prayerTime && j2.prayerTime[0]) {
-          let d = j2.prayerTime[0];
-          // if Putrajaya adjust epoch (-3600)
-          if (zone === 'WLY02') {
-            el.innerHTML = `<strong>Zon: ${j2.zoneName || zone}</strong><br>
-              🌅 Subuh: <b>${new Date((adjustEpoch(d.Subuh,1))*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b> ▪ 🕌 Zohor: <b>${new Date((adjustEpoch(d.Zohor,1))*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br>
-              🌇 Asar: <b>${new Date((adjustEpoch(d.Asar,1))*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b> ▪ 🌆 Maghrib: <b>${new Date((adjustEpoch(d.Maghrib,1))*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br>
-              🌃 Isyak: <b>${new Date((adjustEpoch(d.Isyak,1))*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br><small>${d.Tarikh || ''}</small>`;
-          } else {
-            el.innerHTML = `<strong>Zon: ${j2.zoneName || zone}</strong><br>
-              🌅 Subuh: <b>${new Date(Number(d.Subuh)*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b> ▪ 🕌 Zohor: <b>${new Date(Number(d.Zohor)*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br>
-              🌇 Asar: <b>${new Date(Number(d.Asar)*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b> ▪ 🌆 Maghrib: <b>${new Date(Number(d.Maghrib)*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br>
-              🌃 Isyak: <b>${new Date(Number(d.Isyak)*1000).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}</b><br><small>${d.Tarikh || ''}</small>`;
-          }
-          return;
-        }
-        throw new Error('fallback fail');
-      } catch (e) {
-        $('solatResult').innerHTML = '<span class="error">❌ Gagal dapatkan waktu solat.</span>';
-        console.warn('waktu error', err, e);
-      }
-    }
-  }
-
-  // --- weather ---
-  async function fetchWeather(lat, lon){
-    const el = $('cuacaResult'); el.textContent = '⏳ Memuatkan cuaca...';
+  async function fetchWaktuFromESolat(zone){
+    solatResult.textContent = '⏳ Memuatkan waktu solat...';
     try {
-      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-      const j = await r.json();
-      if (j && j.current_weather) {
-        el.innerHTML = `🌡️ <b>${j.current_weather.temperature}°C</b> • 🌬 ${j.current_weather.windspeed} km/h`;
-      } else throw new Error('no weather');
-    } catch(e) {
-      el.innerHTML = '<span class="error">❌ Gagal muat cuaca.</span>'; console.warn('weather err', e);
+      const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
+      const data = await r.json();
+      if (data && data.prayerTime && data.prayerTime[0]) {
+        const d = data.prayerTime[0];
+        solatResult.innerHTML = `
+          <strong>Zon: ${data.zone || zone}</strong><br>
+          🌅 Subuh: <b>${d.fajr}</b>&nbsp; ☀️ Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
+          🕌 Zohor: <b>${d.dhuhr || d.dhuhr || d.dhuhr}</b><br>
+          🌇 Asar: <b>${d.asr}</b> &nbsp; 🌆 Maghrib: <b>${d.maghrib}</b> &nbsp; 🌃 Isyak: <b>${d.isha}</b><br>
+          <small>Tarikh: ${d.date || d.Tarikh || '-'}</small>
+        `;
+      } else {
+        throw new Error('tiada data eSolat');
+      }
+    } catch (err) {
+      console.warn('eSolat failed', err);
+      solatResult.textContent = '❌ Gagal memuatkan waktu solat (eSolat).';
     }
   }
-  fetchWeather(3.139,101.6869); // default KL
 
-  // --- detect location ---
-  $('btnDetect').addEventListener('click', ()=> {
-    if (!navigator.geolocation) { alert('Peranti tidak menyokong lokasi'); return; }
-    navigator.geolocation.getCurrentPosition(async pos=>{
-      const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      try {
-        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-        const j = await r.json();
-        const name = j.principalSubdivision || j.city || j.locality || '';
-        const map = { "Kuala Lumpur":"WLY01","Putrajaya":"WLY02","Selangor":"SGR01","Perak":"PRK01","Pulau Pinang":"PNG01","Johor":"JHR01","Kedah":"KDH01","Kelantan":"KTN01","Melaka":"MLK01","Negeri Sembilan":"NSN01","Pahang":"PHG01","Perlis":"PLS01","Sabah":"SBH01","Sarawak":"SWK01","Terengganu":"TRG01","Labuan":"LBN01" };
-        let found = null;
-        for (const k of Object.keys(map)) if (name && name.toLowerCase().includes(k.toLowerCase())) { found = map[k]; break; }
-        if (found) { $('negeriSelect').value = found; fetchWaktu(found); fetchWeather(lat, lon); tryPlay(soundClick); }
-        else { fetchWeather(lat, lon); alert('Tidak dapat kenal pasti negeri. Sila pilih negeri secara manual.'); tryPlay(soundClick); }
-      } catch(e){ alert('Gagal detect lokasi'); }
-    }, ()=> { alert('Akses lokasi ditolak.'); });
+  async function fetchCuacaByCoords(lat, lon){
+    cuacaResult.textContent = '⛅ Memuatkan cuaca...';
+    try {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+      const d = await r.json();
+      if (d && d.current_weather) {
+        cuacaResult.innerHTML = `🌡️ ${d.current_weather.temperature}°C — ⛅ Kekuatan angin: ${d.current_weather.windspeed} km/h`;
+      } else {
+        throw new Error('no weather');
+      }
+    } catch (err) {
+      console.warn('weather failed', err);
+      cuacaResult.textContent = '❌ Gagal memuatkan cuaca.';
+    }
+  }
+
+  // handle select change
+  negeriSelect.addEventListener('change', () => {
+    const zone = negeriSelect.value;
+    if (!zone) return;
+    fetchWaktuFromESolat(zone);
+    const c = COORDS[zone];
+    if (c) fetchCuacaByCoords(c[0], c[1]);
   });
 
-  $('negeriSelect').addEventListener('change', ()=> {
-    const z = $('negeriSelect').value;
-    fetchWaktu(z);
-    if (z && zoneCoords[z]) fetchWeather(zoneCoords[z][0], zoneCoords[z][1]);
-  });
-
-  // --- Quiz modal ---
-  const quizData = [
-    {q:"Apakah tujuan utama takaful?", o:["Tolong-menolong (mutual help)","Untuk keuntungan individu","Insurans konvensional"], a:0},
-    {q:"Produk mana sesuai untuk penunggang motosikal?", o:["Z-Rider","Z-Drive Assist","Z-Travel"], a:0},
-    {q:"Z-Drive Assist menawarkan?", o:["Bantuan tepi jalan & towing","Takaful nyawa","Insurans rumah"], a:0},
-    {q:"Skuter boleh dilindungi oleh?", o:["Z-Rider","Z-Motor","Z-FireBiz"], a:0}
-  ];
-  let qIndex=0,qScore=0;
-  function openQuiz(){ $('quizModal').classList.add('show'); tryPlay(soundClick); qIndex=0; qScore=0; renderQ(); }
-  function closeQuiz(){ $('quizModal').classList.remove('show'); }
-  function renderQ(){
-    const cont = $('quizContent'); cont.innerHTML = '';
-    if (qIndex >= quizData.length) {
-      cont.innerHTML = `<div style="font-weight:700">✅ Tamat! Skor: ${qScore}/${quizData.length}</div><div style="margin-top:8px"><button id="quizRestart" class="btn-main">Main Semula</button></div>`;
-      $('quizRestart') && $('quizRestart').addEventListener('click', ()=> { qIndex=0; qScore=0; renderQ(); });
+  // auto detect button
+  btnDetect.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation tidak disokong pada peranti ini.');
       return;
     }
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      // try reverse geocode by BigDataCloud
+      try {
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        const jd = await res.json();
+        const negeriName = jd.principalSubdivision || jd.city || jd.locality;
+        // find zone by name fuzzy match
+        const zoneMap = {
+          "Kuala Lumpur":"WLY01","Putrajaya":"WLY02","Selangor":"SGR01","Pulau Pinang":"PNG01","Perak":"PRK01",
+          "Johor":"JHR01","Kelantan":"KTN01","Kedah":"KDH01","Melaka":"MLK01","Negeri Sembilan":"NSN01",
+          "Pahang":"PHG01","Perlis":"PLS01","Sabah":"SBH01","Sarawak":"SWK01","Terengganu":"TRG01","Labuan":"LBN01"
+        };
+        let pickedZone = null;
+        for (const [k,v] of Object.entries(zoneMap)){
+          if (negeriName && negeriName.toLowerCase().includes(k.toLowerCase())) { pickedZone = v; break; }
+        }
+        if (!pickedZone) {
+          // fallback: simply fetch weather and ask user to pick
+          fetchCuacaByCoords(lat, lon);
+          alert('Tidak dapat kenal pasti negeri secara automatik. Sila pilih negeri secara manual.');
+          return;
+        }
+        negeriSelect.value = pickedZone;
+        fetchWaktuFromESolat(pickedZone);
+        fetchCuacaByCoords(lat, lon);
+      } catch (err) {
+        console.warn('reverse geocode failed', err);
+        alert('Gagal detect lokasi secara automatik. Sila pilih negeri secara manual.');
+      }
+    }, () => {
+      alert('Akses lokasi ditolak. Sila pilih negeri secara manual.');
+    }, {timeout:10000});
+  });
+
+  /* =========================
+     PRODUK ZURICH - grid + modal + whatsapp form
+     ========================= */
+  const produkList = [
+    { id:'zdrive', title:'Z-Drive Assist', desc:'Bantuan tepi jalan 24/7, towing & khidmat kecemasan.' },
+    { id:'zmotor', title:'Z-Motor', desc:'Pelan Takaful Motor untuk perlindungan kemalangan, kecurian & kebakaran.' },
+    { id:'zrider', title:'Z-Rider', desc:'Takaful khas untuk penunggang motosikal & skuter.' },
+    { id:'ztravel', title:'Z-Travel', desc:'Perlindungan perjalanan — kelewatan, kehilangan bagasi & kecemasan perubatan.' },
+    { id:'zpa', title:'Personal Accident', desc:'Perlindungan kemalangan diri 24/7.' },
+    { id:'zfirebiz', title:'Fire Takaful (Business)', desc:'Perlindungan premis perniagaan daripada kebakaran & kerugian aset.' }
+  ];
+  const grid = $('#produkGrid');
+  produkList.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'produk-card';
+    el.dataset.id = p.id;
+    el.innerHTML = `<h4>${p.title}</h4><p>${p.desc}</p>`;
+    el.addEventListener('click', ()=> openProdukModal(p));
+    grid.appendChild(el);
+  });
+
+  const modalProduk = $('#modalProduk');
+  const produkInfoBox = $('#produkInfoBox');
+  const closeProduk = $('#closeProduk');
+  const quoteForm = $('#quoteForm');
+  const cancelQuote = $('#cancelQuote');
+
+  function openProdukModal(p){
+    produkInfoBox.innerHTML = `<h3>${p.title}</h3><p>${p.desc}</p>`;
+    modalProduk.classList.add('show');
+    modalProduk.setAttribute('aria-hidden','false');
+    // ensure form fields cleared
+    $('#q_nama').value = ''; $('#q_tel').value = ''; $('#q_email').value = ''; $('#q_msg').value = '';
+    // store current product id on form element for message
+    quoteForm.dataset.product = p.title;
+  }
+  closeProduk.addEventListener('click', ()=> {
+    modalProduk.classList.remove('show');
+    modalProduk.setAttribute('aria-hidden','true');
+  });
+  window.addEventListener('click', e=> { if (e.target === modalProduk) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }});
+  cancelQuote.addEventListener('click', ()=> { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); });
+
+  // handle quote submit -> open WhatsApp
+  quoteForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nama = $('#q_nama').value.trim();
+    const tel = $('#q_tel').value.trim();
+    const email = $('#q_email').value.trim();
+    const msg = $('#q_msg').value.trim();
+    const prod = quoteForm.dataset.product || 'Zurich Takaful';
+    const text = `Assalamualaikum, saya nak minta quotation produk ${prod}.%0ANama: ${nama}%0ATelefon: ${tel}%0AEmail: ${email}%0AMesej: ${msg}`;
+    window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, '_blank');
+    // show mini success then close
+    produkInfoBox.insertAdjacentHTML('beforeend', `<p style="color:green;margin-top:8px">✅ Borang dibuka di WhatsApp</p>`);
+    setTimeout(()=>{ modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }, 1800);
+  });
+
+  /* =========================
+     QUIZ
+     ========================= */
+  const quizData = [
+    { q:"Apakah tujuan utama takaful?", o:["Tolong-menolong (mutual help)","Untung individu semata","Sistem insurans konvensional"], a:0 },
+    { q:"Produk mana sesuai untuk penunggang motosikal/skuter?", o:["Z-Rider","Z-Travel","Fire Takaful"], a:0 },
+    { q:"Apakah yang Z-Drive Assist tawarkan?", o:["Bantuan tepi jalan & towing","Takaful nyawa","Insurans rumah"], a:0 },
+    { q:"Apakah kelebihan takaful berbanding insurans konvensional?", o:["Konsep tolong-menolong & tabarru'","Bayaran premium lebih rendah sentiasa","Tiada klausa"], a:0 }
+  ];
+  let qIndex = 0, qScore = 0;
+  const quizQ = $('#quizQuestion'), quizO = $('#quizOptions'), startQuizBtn = $('#startQuiz');
+
+  function showQuizQuestion(){
     const q = quizData[qIndex];
-    const h = document.createElement('div'); h.style.fontWeight='700'; h.textContent=q.q; cont.appendChild(h);
-    q.o.forEach((opt,i)=> {
-      const b = document.createElement('button'); b.className='btn-ghost'; b.style.display='block'; b.style.marginTop='8px'; b.textContent=opt;
-      b.addEventListener('click', ()=> { if (i===q.a) qScore++; qIndex++; renderQ(); tryPlay(soundClick); });
-      cont.appendChild(b);
+    quizQ.textContent = q.q;
+    quizO.innerHTML = '';
+    q.o.forEach((opt, i) => {
+      const b = document.createElement('button'); b.className='cta'; b.textContent = opt;
+      b.addEventListener('click', () => {
+        if (i === q.a) qScore++;
+        qIndex++;
+        if (qIndex < quizData.length) showQuizQuestion();
+        else finishQuiz();
+      });
+      quizO.appendChild(b);
     });
   }
-  $('openQuiz').addEventListener('click', openQuiz);
-  $('closeQuiz').addEventListener('click', closeQuiz);
-  $('quizModal').addEventListener('click', (e)=> { if (e.target === $('quizModal')) closeQuiz(); });
+  function finishQuiz(){
+    quizQ.innerHTML = `✅ Kuiz Tamat! Skor: <strong>${qScore}/${quizData.length}</strong>`;
+    quizO.innerHTML = `<button id="quizRestart" class="cta">Ulang Kuiz</button>`;
+    $('#quizRestart').addEventListener('click', ()=> {
+      qIndex=0; qScore=0; startQuizBtn.style.display='inline-block'; quizQ.textContent='Tekan "Mula Kuiz" untuk mula.'; quizO.innerHTML='';
+    });
+  }
+  startQuizBtn.addEventListener('click', () => { startQuizBtn.style.display='none'; qIndex=0; qScore=0; showQuizQuestion(); });
 
-  // --- Fruit slice improvements (pointermove + elementFromPoint) ---
-  let fruitInterval = null, fruitPoints = 0;
-  const fruitArea = $('fruitArea'), fruitScoreTag = $('fruitScore');
-  function spawnFruit(){
-    const f = document.createElement('div'); f.className='fruit';
-    const em = ['🍎','🍌','🍊','🍉','🍓','🍇'][Math.floor(Math.random()*6)];
-    f.textContent = em;
-    const size = 42 + Math.floor(Math.random()*30); f.style.fontSize = size+'px';
-    const left = Math.random()*82; f.style.left = left+'%';
-    f.style.bottom = '-80px'; f.style.position = 'absolute'; f.style.transition = 'bottom 3600ms linear, transform 220ms ease';
-    f.style.pointerEvents = 'auto'; fruitArea.appendChild(f);
-    setTimeout(()=> f.style.bottom = (80 + Math.random()*220) + 'px', 40);
-    const life = 3600 + Math.random()*1200;
-    const rm = setTimeout(()=> { if (f.parentNode) f.parentNode.removeChild(f); }, life+400);
+  /* =========================
+     FRUIT SLICE GAME (fullscreen modal)
+     - touch & mouse slice
+     - fruits spawn, bombs cause game over
+     - sound effects (slice/pop/bomb)
+     ========================= */
+  // DOM
+  const openFruitGameBtn = $('#openFruitGame');
+  const fruitModal = $('#fruitModal');
+  const fgCanvas = $('#fruitCanvas');
+  const fgPause = $('#fgPause'); const fgRestart = $('#fgRestart'); const fgClose = $('#fgClose');
+  const fgScore = $('#fgScore'); const fgOverlay = $('#fgOverlay'); const fgFinalScore = $('#fgFinalScore'); const fgOverlayRestart = $('#fgOverlayRestart');
+  // audio (external light mp3s)
+  const S_SLICE = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_896b8b71f1.mp3?filename=slice-1.mp3');
+  const S_POP = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_2f6b6b1.mp3?filename=pop-1.mp3');
+  const S_BOMB = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_f7a0b7b0.mp3?filename=explode-01.mp3');
 
-    // keep dataset to mark alive
-    f.dataset.alive = '1';
-    // slice action
-    const slice = () => {
-      if (f.dataset.alive !== '1') return;
-      f.dataset.alive = '0';
-      tryPlay(soundSlice);
-      f.style.transform = 'scale(0) rotate(-12deg)';
-      fruitPoints += 1; fruitScoreTag.textContent = 'Score: ' + fruitPoints;
-      setTimeout(()=> { if (f.parentNode) f.parentNode.removeChild(f); clearTimeout(rm); }, 220);
-    };
-    // also add click fallback
-    f.addEventListener('click', slice);
-    f.addEventListener('touchstart', (e)=> { e.preventDefault(); slice(); }, {passive:false});
+  // canvas setup
+  let ctx = null, W=0, H=0, DPR=window.devicePixelRatio||1;
+  function resizeFG(){
+    fgCanvas.width = fgCanvas.clientWidth * DPR;
+    fgCanvas.height = fgCanvas.clientHeight * DPR;
+    if (!ctx) ctx = fgCanvas.getContext('2d');
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
   }
 
-  function startFruit(){
-    stopFruit();
-    fruitPoints = 0; fruitScoreTag.textContent = 'Score: 0';
-    // spawn slower so user can slice
-    fruitInterval = setInterval(spawnFruit, 1400);
-    tryPlay(soundClick);
-  }
-  function stopFruit(){
-    clearInterval(fruitInterval); fruitInterval = null;
-    Array.from(fruitArea.querySelectorAll('.fruit')).forEach(n=>n.remove());
-  }
+  // game state
+  let fruits = [], particles = [], slicePath = [], isRunning=false, isPaused=false, scoreFG=0, spawnTimer=0, spawnInterval=900, lastTime=0;
 
-  // pointer sweep detection: when pointer moves, check element under pointer, if it's .fruit call click
-  function handlePointerMove(e){
-    const touch = e.touches ? e.touches[0] : null;
-    const x = (touch ? touch.clientX : e.clientX);
-    const y = (touch ? touch.clientY : e.clientY);
-    const el = document.elementFromPoint(x, y);
-    if (!el) return;
-    if (el.classList && el.classList.contains('fruit')) {
-      // trigger slice via click
-      el.click();
+  const FRUITS = [
+    { name:'apple', color:'#ff5252', r:28, pts:10 },
+    { name:'orange', color:'#ff9800', r:30, pts:12 },
+    { name:'watermelon', color:'#4caf50', r:36, pts:18 },
+    { name:'lemon', color:'#ffeb3b', r:26, pts:9 }
+  ];
+  const BOMB = { name:'bomb', color:'#333', r:28 };
+
+  // helpers
+  const rand = (a,b) => a + Math.random()*(b-a);
+  function spawnItem(){
+    const isBomb = Math.random() < 0.08;
+    const x = rand(60, W-60);
+    const vx = rand(-80,80)/1000;
+    if (isBomb){
+      fruits.push({type:BOMB, x, y: H + 60, vx, vy:-rand(650,920), r:BOMB.r, exploded:false});
+    } else {
+      const t = FRUITS[Math.floor(Math.random()*FRUITS.length)];
+      fruits.push({type:t, x, y:H+60, vx, vy:-rand(600,900), r:t.r, cut:false, pts:t.pts, color:t.color});
+    }
+  }
+  function spawnParticles(x,y,color){
+    for (let i=0;i<12;i++){
+      particles.push({x,y,vx:rand(-200,200)/1000,vy:rand(-200,0)/1000,life:rand(600,1200),t:0,color});
     }
   }
 
-  // attach pointer listeners when fruit modal open
-  $('openFruit').addEventListener('click', ()=> {
-    $('fruitModal').classList.add('show'); startFruit(); tryPlay(soundClick);
-    // enable pointermove on whole document for swipe slicing while modal open
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('touchmove', handlePointerMove, {passive:false});
-  });
-  $('closeFruit').addEventListener('click', ()=> { $('fruitModal').classList.remove('show'); stopFruit(); document.removeEventListener('pointermove', handlePointerMove); document.removeEventListener('touchmove', handlePointerMove); });
-  $('fruitRestart').addEventListener('click', ()=> { stopFruit(); startFruit(); });
-  $('fruitStop').addEventListener('click', ()=> { stopFruit(); });
+  function pointCircle(px,py,cx,cy,r){ const dx=px-cx, dy=py-cy; return dx*dx+dy*dy <= r*r; }
 
-  // --- Balloon pop (same approach) ---
-  let ballInterval = null, ballPoints = 0;
-  const ballArea = $('balloonArea'), ballScoreTag = $('ballScore');
-  function spawnBalloon(){
-    const b = document.createElement('div'); b.className='balloon'; b.textContent = '🎈';
-    const size = 44 + Math.floor(Math.random()*30); b.style.fontSize = size + 'px';
-    const left = Math.random()*82; b.style.left = left + '%';
-    b.style.bottom = '-80px'; b.style.position = 'absolute'; b.style.transition = 'bottom 5200ms linear, transform 200ms';
-    b.style.pointerEvents = 'auto'; ballArea.appendChild(b);
-    setTimeout(()=> b.style.bottom = (380 + Math.random()*40) + 'px', 60);
-    const life = 5200 + Math.random()*800;
-    const rm = setTimeout(()=> { if (b.parentNode) b.parentNode.removeChild(b); }, life+300);
-    const pop = () => {
-      tryPlay(soundPop);
-      b.style.transform = 'scale(0)'; ballPoints += 1; ballScoreTag.textContent = 'Score: ' + ballPoints + ' 🎈';
-      setTimeout(()=> { if (b.parentNode) b.parentNode.removeChild(b); clearTimeout(rm); }, 200);
-    };
-    b.addEventListener('click', pop);
-    b.addEventListener('touchstart', (e)=> { e.preventDefault(); pop(); }, {passive:false});
+  function checkSlice(){
+    if (slicePath.length < 2) return;
+    const path = slicePath.slice(-6);
+    for (const f of fruits){
+      if (f.cut || (f.type.name==='bomb' && f.exploded)) continue;
+      for (let i=1;i<path.length;i++){
+        const x1=path[i-1].x, y1=path[i-1].y, x2=path[i].x, y2=path[i].y;
+        for (let t=0; t<=1; t+=0.25){
+          const sx = x1 + (x2-x1)*t, sy = y1 + (y2-y1)*t;
+          if (pointCircle(sx,sy,f.x,f.y,f.r)){
+            if (f.type.name==='bomb'){
+              S_BOMB.currentTime=0; S_BOMB.play().catch(()=>{});
+              f.exploded=true; endFG(true); return;
+            } else {
+              if (!f.cut){
+                f.cut=true;
+                scoreFG += f.pts || 10;
+                fgScore.textContent = scoreFG;
+                spawnParticles(f.x, f.y, f.color || f.type.color);
+                S_SLICE.currentTime=0; S_SLICE.play().catch(()=>{});
+              }
+            }
+          }
+        }
+      }
+    }
+    fruits = fruits.filter(f => !f.cut);
   }
-  function startBalloon(){ stopBalloon(); ballPoints = 0; ballScoreTag.textContent = 'Score: 0 🎈'; ballInterval = setInterval(spawnBalloon, 1200); tryPlay(soundClick); }
-  function stopBalloon(){ clearInterval(ballInterval); ballInterval = null; Array.from(ballArea.querySelectorAll('.balloon')).forEach(n=>n.remove()); }
-  $('openBalloon').addEventListener('click', ()=> { $('balloonModal').classList.add('show'); startBalloon(); tryPlay(soundClick); });
-  $('closeBall').addEventListener('click', ()=> { $('balloonModal').classList.remove('show'); stopBalloon(); });
-  $('ballRestart').addEventListener('click', ()=> { stopBalloon(); startBalloon(); });
-  $('ballStop').addEventListener('click', ()=> { stopBalloon(); });
 
-  // close modals by clicking outside
-  ['prodModal','quizModal','fruitModal','balloonModal'].forEach(id=>{
-    const m = $(id);
-    if (!m) return;
-    m.addEventListener('click', (e)=> { if (e.target === m) { m.classList.remove('show'); stopFruit(); stopBalloon(); }});
-  });
-  // ESC close
-  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') { ['prodModal','quizModal','fruitModal','balloonModal'].forEach(id=>$(id)&&$(id).classList.remove('show')); stopFruit(); stopBalloon(); }});
-
-  // ensure audio unlocked on first user tap anywhere
-  function unlockAudio(){
-    tryPlay(soundClick); tryPlay(soundSlice); tryPlay(soundPop);
-    window.removeEventListener('click', unlockAudio);
+  // render loop
+  function updateEntities(dt){
+    for (const f of fruits){ f.vy += 1600*(dt/1000); f.x += f.vx * dt; f.y += f.vy * dt; }
+    for (const p of particles){ p.vy += 1200*(dt/1000); p.x += p.vx * dt; p.y += p.vy * dt; p.t += dt; }
+    particles = particles.filter(p => p.t < p.life);
+    fruits = fruits.filter(f => (f.y - f.r) <= (H + 80));
   }
-  window.addEventListener('click', unlockAudio, {once:true});
 
-  // initial UI wiring
-  $('openProducts').addEventListener('click', ()=> { $('prodModal').classList.add('show'); tryPlay(soundClick); });
-  $('openQuiz').addEventListener('click', ()=> { $('quizModal').classList.add('show'); tryPlay(soundClick); qIndex=0; qScore=0; renderQ(); });
+  function draw(){
+    if (!ctx) return;
+    ctx.clearRect(0,0,W,H);
+    // fruits
+    for (const f of fruits){
+      ctx.save(); ctx.translate(f.x, f.y);
+      // shadow
+      ctx.beginPath(); ctx.arc(6,6,f.r+4,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.14)'; ctx.fill();
+      // main
+      ctx.beginPath(); ctx.arc(0,0,f.r,0,Math.PI*2);
+      ctx.fillStyle = f.color || f.type.color; ctx.fill();
+      // bomb mark
+      if (f.type.name==='bomb'){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(0,0,f.r*0.55,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font='18px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('💣',0,0);
+      }
+      ctx.restore();
+    }
+    // particles
+    for (const p of particles){ ctx.beginPath(); ctx.arc(p.x, p.y, 4,0,Math.PI*2); ctx.fillStyle = p.color || '#fff'; ctx.fill(); }
 
-  console.info('AZA updated script ready — fixes applied.');
-})();
+    // slice path
+    if (slicePath.length){
+      ctx.beginPath(); ctx.moveTo(slicePath[0].x, slicePath[0].y);
+      for (let i=1;i<slicePath.length;i++) ctx.lineTo(slicePath[i].x, slicePath[i].y);
+      ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineCap='round'; ctx.stroke();
+    }
+  }
+
+  function loop(ts){
+    if (!isRunning) return;
+    const dt = Math.min(40, ts - lastTime); lastTime = ts;
+    if (!isPaused){
+      spawnTimer += dt;
+      if (spawnTimer > spawnInterval){ spawnTimer = 0; spawnInterval = rand(600,1100); spawnItem(); }
+      updateEntities(dt); checkSlice();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // input handling
+  let drawing = false;
+  function addPoint(x,y){ slicePath.push({x,y,t:Date.now()}); if (slicePath.length>20) slicePath.shift(); }
+  function startDraw(x,y){ drawing=true; slicePath = [{x,y,t:Date.now()}]; addPoint(x,y); }
+  function moveDraw(x,y){ if(!drawing) return; addPoint(x,y); }
+  function endDraw(){ drawing=false; setTimeout(()=>slicePath=[],120); }
+
+  fgCanvas.addEventListener('mousedown', e => startDraw(e.offsetX, e.offsetY));
+  fgCanvas.addEventListener('mousemove', e => moveDraw(e.offsetX, e.offsetY));
+  window.addEventListener('mouseup', () => endDraw());
+  fgCanvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect(); startDraw(t.clientX - r.left, t.clientY - r.top); });
+  fgCanvas.addEventListener('touchmove', e => { e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect(); moveDraw(t.clientX - r.left, t.clientY - r.top); });
+  fgCanvas.addEventListener('touchend', e => { e.preventDefault(); endDraw(); });
+
+  function startFG(){
+    // reset
+    fruits = []; particles = []; slicePath = []; scoreFG = 0; fgScore.textContent = '0';
+    spawnTimer = 0; spawnInterval = 900; isRunning = true; isPaused = false; fgOverlay.classList.remove('show');
+    lastTime = performance.now();
+    S_POP.currentTime=0; S_POP.play().catch(()=>{});
+    requestAnimationFrame(loop);
+  }
+  function pauseFG(){ isPaused = !isPaused; fgPause.textContent = isPaused ? '▶️ Main' : '⏸️ Jeda'; }
+  function endFG(bomb=false){
+    isRunning = false;
+    fgFinalScore.textContent = scoreFG;
+    document.getElementById('fgOverlayTitle').textContent = bomb ? 'Boom! Game Over 💥' : 'Game Over';
+    fgOverlay.classList.add('show');
+  }
+
+  // wire UI
+  openFruitGameBtn.addEventListener('click', () => {
+    fruitModal.classList.add('show'); fruitModal.setAttribute('aria-hidden','false');
+    // size and start
+    resizeFG(); startFG();
+  });
+  fgClose.addEventListener('click', () => { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; });
+  fgRestart.addEventListener('click', () => { startFG(); });
+  fgPause.addEventListener('click', () => { pauseFG(); });
+  fgOverlayRestart.addEventListener('click', () => { fgOverlay.classList.remove('show'); startFG(); });
+
+  function resizeFG(){
+    DPR = window.devicePixelRatio || 1;
+    // make canvas full screen height minus top/bottom
+    fgCanvas.style.height = (window.innerHeight - 140) + 'px';
+    fgCanvas.style.width = '100%';
+    fgCanvas.width = fgCanvas.clientWidth * DPR;
+    fgCanvas.height = fgCanvas.clientHeight * DPR;
+    ctx = fgCanvas.getContext('2d');
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
+  }
+  window.addEventListener('resize', () => { if (fruitModal.classList.contains('show')) resizeFG(); });
+
+  /* ============= INIT DEFAULTS ============= */
+  // prefill a default zone (optional)
+  //negeriSelect.value = 'WLY01'; fetchWaktuFromESolat('WLY01'); fetchCuacaByCoords(COORDS['WLY01'][0], COORDS['WLY01'][1]);
+
+  // ensure clicking outside modalProduk closes it
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape'){ if (modalProduk.classList.contains('show')) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); } if (fruitModal.classList.contains('show')) { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; } }
+  });
+
+  // small helpful console log
+  console.info('AZA Zurich app initialized.');
+});
 </script>
 </body>
 </html>
