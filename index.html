@@ -251,27 +251,35 @@ const COORDS = {
   "LBN01": [5.2831, 115.2308]
 };
 
-  async function fetchWaktuFromESolat(zone){
-    solatResult.textContent = '⏳ Memuatkan waktu solat...';
-    try {
-      const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
-      const data = await r.json();
-      if (data && data.prayerTime && data.prayerTime[0]) {
-        const d = data.prayerTime[0];
-        solatResult.innerHTML = `
-          <strong>Zon: ${data.zone || zone}</strong><br>
-          🌅 Subuh: <b>${d.fajr}</b>&nbsp; ☀️ Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
-          🕌 Zohor: <b>${d.dhuhr || d.dhuhr || d.dhuhr}</b><br>
-          🌇 Asar: <b>${d.asr}</b> &nbsp; 🌆 Maghrib: <b>${d.maghrib}</b> &nbsp; 🌃 Isyak: <b>${d.isha}</b><br>
-          <small>Tarikh: ${d.date || d.Tarikh || '-'}</small>
-        `;
-      } else {
-        throw new Error('tiada data eSolat');
-      }
-    } catch (err) {
-      console.warn('eSolat failed', err);
-      solatResult.textContent = '❌ Gagal memuatkan waktu solat (eSolat).';
+  async function fetchWaktuFromESolat(zone) {
+  solatResult.textContent = '⏳ Memuatkan waktu solat...';
+
+  // ✅ Ubah zone Putrajaya supaya ikut waktu Kuala Lumpur
+  const zoneToUse = (zone === 'WLY02') ? 'WLY01' : zone;
+
+  try {
+    const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneToUse}`);
+    const data = await r.json();
+
+    if (data && data.prayerTime && data.prayerTime[0]) {
+      const d = data.prayerTime[0];
+      solatResult.innerHTML = `
+        <strong>📍 Zon: ${data.zone || zone}</strong><br>
+        🌅 Subuh: <b>${d.fajr}</b> &nbsp; ☀️ Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
+        🕌 Zohor: <b>${d.dhuhr}</b><br>
+        🌇 Asar: <b>${d.asr}</b><br>
+        🌆 Maghrib: <b>${d.maghrib}</b><br>
+        🌃 Isyak: <b>${d.isha}</b><br>
+        📅 <small>${d.date || d.Tarikh || '-'}</small>
+      `;
+    } else {
+      throw new Error('Tiada data eSolat');
     }
+
+  } catch (err) {
+    console.warn('eSolat failed', err);
+    solatResult.textContent = '❌ Gagal memuatkan waktu solat (API eSolat).';
+  }
   }
 
   async function fetchCuacaByCoords(lat, lon){
