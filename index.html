@@ -231,18 +231,25 @@ document.addEventListener('DOMContentLoaded', () => {
   /* =========================
      WAKTU SOLAT & CUACA
      ========================= */
-  const negeriSelect = $('#negeriSelect');
-  const solatResult = $('#solatResult');
-  const cuacaResult = $('#cuacaResult');
-  const btnDetect = $('#btnDetect');
-
   // coords by zone code
-  const COORDS = {
-    "WLY01":[3.139,101.6869],"WLY02":[2.9265,101.6965],useZone: "WLY01" },"SGR01":[3.0738,101.5183],"PNG01":[5.4164,100.3327],
-    "PRK01":[4.5975,101.0901],"JHR01":[1.4927,103.7414],"KTN01":[6.1254,102.2381],"KDH01":[6.1184,100.3685],
-    "MLK01":[2.1896,102.2501],"NSN01":[2.7258,101.9424],"PHG01":[3.8126,103.3256],"PLS01":[6.4447,100.2046],
-    "SBH01":[5.978,116.0753],"SWK01":[1.5533,110.3592],"TRG01":[5.3302,103.1408],"LBN01":[5.2831,115.2308]
-  };
+const COORDS = {
+  "WLY01": [3.139, 101.6869], // Kuala Lumpur
+  "WLY02": [2.9265, 101.6965, "WLY01"], // Putrajaya -> ikut waktu KL
+  "SGR01": [3.0738, 101.5183],
+  "PNG01": [5.4164, 100.3327],
+  "PRK01": [4.5975, 101.0901],
+  "JHR01": [1.4927, 103.7414],
+  "KTN01": [6.1254, 102.2381],
+  "KDH01": [6.1184, 100.3685],
+  "MLK01": [2.1896, 102.2501],
+  "NSN01": [2.7258, 101.9424],
+  "PHG01": [3.8126, 103.3256],
+  "PLS01": [6.4447, 100.2046],
+  "SBH01": [5.978, 116.0753],
+  "SWK01": [1.5533, 110.3592],
+  "TRG01": [5.3302, 103.1408],
+  "LBN01": [5.2831, 115.2308]
+};
 
   async function fetchWaktuFromESolat(zone){
     solatResult.textContent = '⏳ Memuatkan waktu solat...';
