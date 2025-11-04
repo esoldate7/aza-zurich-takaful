@@ -11,6 +11,15 @@ header {
   color: white;
   padding: 15px 10px;
 }
+.logo {
+  width: 60px;
+  height: auto;
+  margin-right: 10px;
+  border-radius: 10px;
+  background: white;
+  padding: 4px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+}
 
 nav button {
   background: white;
