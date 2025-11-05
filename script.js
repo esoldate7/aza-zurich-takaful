@@ -37,41 +37,116 @@ function openQuoteForm(name) {
 }
 
 // ========== FRUIT SLICE GAME ==========
-let fruitInterval;
-function startFruitSlice() {
-  const game = document.getElementById("fruit-game");
-  game.innerHTML = "";
-  let score = 0;
-  const scoreDisplay = document.createElement("div");
-  scoreDisplay.className = "score-display";
-  scoreDisplay.textContent = "Score: 0";
-  game.appendChild(scoreDisplay);
+// ===============================
+// 🎮 FRUIT SLICE - Refined Script
+// ===============================
 
-  fruitInterval = setInterval(() => {
-    const fruit = document.createElement("div");
-    fruit.className = "fruit";
-    fruit.textContent = "🍎";
-    fruit.style.left = Math.random() * 80 + "%";
-    fruit.style.top = Math.random() * 80 + "%";
-    fruit.style.fontSize = "40px";
-    game.appendChild(fruit);
+// 🎵 Load sound
+const sliceSound = new Audio("assets/slice.mp3");
+sliceSound.volume = 0.6; // lembut, tak bingit
 
-    fruit.addEventListener("click", () => {
-      fruit.style.transform = "scale(0)";
-      score++;
-      scoreDisplay.textContent = "Score: " + score;
-      new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_0c1bdeef54.mp3?filename=knife-slice-1.mp3").play();
-      setTimeout(() => fruit.remove(), 300);
-    });
+// 🍉 Canvas setup
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    setTimeout(() => fruit.remove(), 2000);
-  }, 1500);
+let fruits = [];
+let score = 0;
+let lives = 3;
+let gravity = 0.05;
+let gameOver = false;
+
+// 🎨 UI text setup
+ctx.font = "20px Poppins";
+ctx.fillStyle = "#fff";
+
+// 🥝 Fruit class
+class Fruit {
+  constructor(x, y, size, color, speedX, speedY) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.color = color;
+    this.speedX = speedX;
+    this.speedY = speedY;
+    this.isSliced = false;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.fillStyle = this.color;
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.speedY += gravity;
+  }
 }
 
-function stopFruitSlice() {
-  clearInterval(fruitInterval);
-  document.getElementById("fruit-game").innerHTML = "";
+// 🍊 Spawn fruits
+function spawnFruit() {
+  if (gameOver) return;
+
+  const size = 40 + Math.random() * 25; // lebih besar
+  const x = Math.random() * canvas.width;
+  const y = canvas.height + 20;
+  const color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+  const speedX = -3 + Math.random() * 6;
+  const speedY = -9 - Math.random() * 4; // lonjak perlahan naik
+  fruits.push(new Fruit(x, y, size, color, speedX, speedY));
 }
+
+// 🎯 Animation loop
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillText(`Score: ${score}`, 20, 30);
+  ctx.fillText(`Lives: ${lives}`, canvas.width - 100, 30);
+
+  fruits.forEach((fruit, index) => {
+    fruit.update();
+    fruit.draw();
+
+    // Buah jatuh bawah skrin
+    if (fruit.y - fruit.size > canvas.height) {
+      fruits.splice(index, 1);
+      if (--lives <= 0) {
+        gameOver = true;
+      }
+    }
+  });
+
+  if (!gameOver) {
+    requestAnimationFrame(animate);
+  } else {
+    ctx.fillStyle = "#ff4444";
+    ctx.font = "40px Poppins";
+    ctx.fillText("Game Over!", canvas.width / 2 - 100, canvas.height / 2);
+  }
+}
+
+// 🍎 Slice detection
+canvas.addEventListener("mousemove", (e) => {
+  fruits.forEach((fruit, index) => {
+    const dx = e.offsetX - fruit.x;
+    const dy = e.offsetY - fruit.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < fruit.size && !fruit.isSliced) {
+      fruit.isSliced = true;
+      sliceSound.currentTime = 0;
+      sliceSound.play();
+      score += 10;
+      fruits.splice(index, 1);
+    }
+  });
+});
+
+// 🍌 Start game
+setInterval(spawnFruit, 1500); // lebih perlahan & stabil
+animate();
+
 
 // ========== BALLOON POP GAME ==========
 let balloonInterval;
