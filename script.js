@@ -37,13 +37,14 @@ function openQuoteForm(name) {
 }
 
 // ========== FRUIT SLICE GAME ==========
+// ========== FRUIT SLICE GAME ==========
 // ===============================
-// 🎮 FRUIT SLICE - Refined Script
+// 🎮 FRUIT SLICE - Tuned Version (BroChat Edition)
 // ===============================
 
 // 🎵 Load sound
 const sliceSound = new Audio("assets/slice.mp3");
-sliceSound.volume = 0.6; // lembut, tak bingit
+sliceSound.volume = 0.6;
 
 // 🍉 Canvas setup
 const canvas = document.getElementById("gameCanvas");
@@ -52,7 +53,7 @@ const ctx = canvas.getContext("2d");
 let fruits = [];
 let score = 0;
 let lives = 3;
-let gravity = 0.05;
+let gravity = 0.04;
 let gameOver = false;
 
 // 🎨 UI text setup
@@ -68,39 +69,51 @@ class Fruit {
     this.color = color;
     this.speedX = speedX;
     this.speedY = speedY;
+    this.rotation = Math.random() * 360;
+    this.spin = (Math.random() - 0.5) * 8;
     this.isSliced = false;
   }
 
   draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate((this.rotation * Math.PI) / 180);
     ctx.beginPath();
-    ctx.fillStyle = this.color;
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(0, 0, this.size * 0.2, 0, 0, this.size);
+    grad.addColorStop(0, "#fff");
+    grad.addColorStop(1, this.color);
+    ctx.fillStyle = grad;
+    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 
   update() {
     this.x += this.speedX;
     this.y += this.speedY;
     this.speedY += gravity;
+    this.rotation += this.spin;
   }
 }
 
-// 🍊 Spawn fruits
+// 🍊 Spawn fruits (lebih kerap & stabil)
 function spawnFruit() {
   if (gameOver) return;
 
-  const size = 40 + Math.random() * 25; // lebih besar
-  const x = Math.random() * canvas.width;
-  const y = canvas.height + 20;
-  const color = `hsl(${Math.random() * 360}, 80%, 60%)`;
-  const speedX = -3 + Math.random() * 6;
-  const speedY = -9 - Math.random() * 4; // lonjak perlahan naik
+  const size = 55 + Math.random() * 25; // buah besar sikit
+  const x = 50 + Math.random() * (canvas.width - 100);
+  const y = canvas.height + size;
+  const color = `hsl(${Math.random() * 360}, 85%, 55%)`;
+  const speedX = -2 + Math.random() * 4;
+  const speedY = -6 - Math.random() * 2.5; // naik perlahan, tak terlalu laju
   fruits.push(new Fruit(x, y, size, color, speedX, speedY));
 }
 
 // 🎯 Animation loop
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.font = "20px Poppins";
   ctx.fillText(`Score: ${score}`, 20, 30);
   ctx.fillText(`Lives: ${lives}`, canvas.width - 100, 30);
 
@@ -126,7 +139,7 @@ function animate() {
   }
 }
 
-// 🍎 Slice detection
+// 🍎 Slice detection (lebih responsif)
 canvas.addEventListener("mousemove", (e) => {
   fruits.forEach((fruit, index) => {
     const dx = e.offsetX - fruit.x;
@@ -143,8 +156,8 @@ canvas.addEventListener("mousemove", (e) => {
   });
 });
 
-// 🍌 Start game
-setInterval(spawnFruit, 1500); // lebih perlahan & stabil
+// 🍌 Start game (spawn lebih cepat)
+setInterval(spawnFruit, 900); // sebelum ni 1500 — sekarang muncul lebih natural
 animate();
 
 
