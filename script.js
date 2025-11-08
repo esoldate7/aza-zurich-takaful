@@ -164,7 +164,7 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 // 🍌 Start game (spawn lebih cepat)
-setInterval(spawnFruit, 1000); // sebelum ni 1500 — sekarang muncul lebih natural
+setInterval(spawnFruit, 800); // sebelum ni 1500 — sekarang muncul lebih natural
 animate();
 
 
