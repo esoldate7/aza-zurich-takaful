@@ -86,6 +86,13 @@ class Fruit {
     ctx.arc(0, 0, this.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+     // 🔲 Tambah outline supaya bentuk lebih jelas
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.stroke();
+
+  ctx.restore();
+  }
   }
 
   update() {
