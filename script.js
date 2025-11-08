@@ -36,7 +36,7 @@ function openQuoteForm(name) {
   alert(`📝 Borang quotation untuk ${name} akan dibuka di versi seterusnya.`);
 }
 
-// ========== FRUIT SLICE GAME ==========
+
 // ========== FRUIT SLICE GAME ==========
 // ===============================
 // 🎮 FRUIT SLICE - Tuned Version (BroChat Edition)
@@ -157,7 +157,7 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 // 🍌 Start game (spawn lebih cepat)
-setInterval(spawnFruit, 900); // sebelum ni 1500 — sekarang muncul lebih natural
+setInterval(spawnFruit, 1000); // sebelum ni 1500 — sekarang muncul lebih natural
 animate();
 
 
