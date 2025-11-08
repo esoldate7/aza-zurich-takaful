@@ -96,20 +96,20 @@ class Fruit {
   }
 }
 
-// 🍊 Spawn fruits (lebih kerap & stabil)
+// 🍊 Spawn fruits (lebih stabil & konsisten)
 function spawnFruit() {
   if (gameOver) return;
 
-  const size = 55 + Math.random() * 25; // buah besar sikit
-  const x = 50 + Math.random() * (canvas.width - 100);
+  const size = 60 + Math.random() * 25;
+  const x = 60 + Math.random() * (canvas.width - 120);
   const y = canvas.height + size;
-  const color = `hsl(${Math.random() * 360}, 85%, 55%)`;
-  const speedX = -2 + Math.random() * 4;
-  const speedY = -6 - Math.random() * 2.5; // naik perlahan, tak terlalu laju
+  const color = `hsl(${Math.random() * 360}, 90%, 45%)`; // warna lebih vivid
+  const speedX = -1.5 + Math.random() * 3; // gerak kiri-kanan perlahan
+  const speedY = -8 - Math.random() * 3; // naik lebih tinggi (lebih lama di udara)
   fruits.push(new Fruit(x, y, size, color, speedX, speedY));
 }
 
-// 🎯 Animation loop
+// 🎯 Animation loop (tuned supaya buah stay lebih lama)
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#fff";
@@ -121,8 +121,8 @@ function animate() {
     fruit.update();
     fruit.draw();
 
-    // Buah jatuh bawah skrin
-    if (fruit.y - fruit.size > canvas.height) {
+    // Buah jatuh bawah skrin (lebih perlahan)
+    if (fruit.y - fruit.size > canvas.height + 50) {
       fruits.splice(index, 1);
       if (--lives <= 0) {
         gameOver = true;
