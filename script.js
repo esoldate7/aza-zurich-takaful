@@ -3,6 +3,22 @@ function showSection(id) {
   document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
+// ========== GAME SWITCHER ==========
+function showGame(type) {
+  // Sembunyi semua
+  document.getElementById("fruit-game").style.display = "none";
+  document.getElementById("balloon-game").style.display = "none";
+
+  // Henti game bila tukar
+  stopBalloonGame?.();
+
+  if (type === "fruit") {
+    document.getElementById("fruit-game").style.display = "block";
+  } else if (type === "balloon") {
+    document.getElementById("balloon-game").style.display = "block";
+    startBalloonGame();
+  }
+}
 
 // ========== PRODUK ZURICH ==========
 const products = [
