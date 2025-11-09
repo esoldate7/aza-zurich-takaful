@@ -108,3 +108,16 @@ footer {
   cursor: pointer;
   margin: 5px;
 }
+.rainbow-banner {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  margin-top: 10px;
+}
+
+@keyframes glowText {
+  0% { text-shadow: 0 0 5px #ff0080, 0 0 10px #ff0080, 0 0 15px #ff0080; }
+  50% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff; }
+  100% { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; }
+  }
