@@ -169,47 +169,107 @@ animate();
 
 
 // ========== BALLOON POP GAME ==========
+// ========== BALLOON POP GAME (🌈 BroChat Rainbow Edition) ==========
 let balloonInterval;
+let activeRises = [];
+let popSound = new Audio("assets/balloon-pop.mp3");
+popSound.volume = 0.7;
+
 function startBalloonGame() {
   const area = document.getElementById("balloon-game");
   area.innerHTML = "";
   let score = 0;
+  let gameOver = false;
+  let rainbowMode = false;
+
   const scoreDisplay = document.createElement("div");
   scoreDisplay.className = "score-display";
   scoreDisplay.textContent = "Score: 0 🎈";
   area.appendChild(scoreDisplay);
 
-  const popSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/22/audio_5b5cfa5b4f.mp3?filename=balloon-pop.mp3");
+  // 🌈 Label bila Rainbow Mode aktif
+  const rainbowBanner = document.createElement("div");
+  rainbowBanner.className = "rainbow-banner";
+  rainbowBanner.textContent = "";
+  area.appendChild(rainbowBanner);
 
+  // 🎈 Spawn belon dengan animasi warna & kelajuan rawak
   balloonInterval = setInterval(() => {
+    if (gameOver) return;
+
     const balloon = document.createElement("div");
     balloon.className = "balloon";
     balloon.textContent = "🎈";
-    balloon.style.left = Math.random() * 90 + "%";
+
+    const size = 35 + Math.random() * 25;
+    balloon.style.fontSize = `${size}px`;
+    balloon.style.left = Math.random() * 85 + "%";
     balloon.style.bottom = "0px";
-    balloon.style.fontSize = "45px";
+
+    // 🌈 Warna belon
+    if (rainbowMode) {
+      const hue = Math.floor(Math.random() * 360);
+      balloon.style.filter = `drop-shadow(0 0 6px hsl(${hue},100%,65%))`;
+      balloon.style.color = `hsl(${hue},100%,60%)`;
+    }
+
+    // 💨 Kelajuan naik rawak
+    const riseSpeed = rainbowMode ? 5 + Math.random() * 2 : 3 + Math.random() * 2;
     area.appendChild(balloon);
 
+    let bottom = 0;
     const rise = setInterval(() => {
-      let bottom = parseInt(balloon.style.bottom);
-      balloon.style.bottom = bottom + 5 + "px";
-      if (bottom > 400) {
+      if (gameOver) {
+        balloon.remove();
+        clearInterval(rise);
+        return;
+      }
+      bottom += riseSpeed;
+      balloon.style.bottom = bottom + "px";
+      if (bottom > 450) {
         balloon.remove();
         clearInterval(rise);
       }
-    }, 100);
+    }, 40);
 
+    activeRises.push(rise);
+
+    // 💥 Klik untuk pop
     balloon.addEventListener("click", () => {
+      balloon.style.transition = "transform 0.1s ease-out";
+      balloon.style.transform = "scale(1.4)";
+      popSound.currentTime = 0;
       popSound.play();
+      setTimeout(() => balloon.remove(), 120);
+      clearInterval(rise);
       score++;
       scoreDisplay.textContent = "Score: " + score + " 🎈";
-      balloon.remove();
-      clearInterval(rise);
+
+      // 🌈 Aktifkan Rainbow Mode bila score ≥ 10
+      if (!rainbowMode && score >= 10) {
+        rainbowMode = true;
+        rainbowBanner.textContent = "🌈 RAINBOW MODE AKTIF!";
+        rainbowBanner.style.animation = "glowText 1s infinite alternate";
+      }
+
+      // 🎯 Tamat contoh auto
+      if (score >= 30) {
+        endBalloonGame("🎉 Anda berjaya pop 30 belon!");
+        gameOver = true;
+      }
     });
-  }, 1200);
+  }, 700);
 }
 
 function stopBalloonGame() {
   clearInterval(balloonInterval);
+  activeRises.forEach(clearInterval);
   document.getElementById("balloon-game").innerHTML = "";
+}
+
+function endBalloonGame(message) {
+  clearInterval(balloonInterval);
+  activeRises.forEach(clearInterval);
+  const area = document.getElementById("balloon-game");
+  area.innerHTML = `<div class="end-msg">${message}</div>`;
 }
