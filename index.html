@@ -145,12 +145,19 @@
     </section>
 
     <!-- ===== Lite Games Launcher (still page scrollable) ===== -->
-    <section id="gamesCard" class="card">
-      <h3>🎮 Lite Games</h3>
-      <p style="margin:0 0 8px 0;font-size:13px">Main sekejap — santai. Tekan butang untuk buka Fruit Slice fullscreen.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="openFruitGame" class="cta">🍉 Fruit Slice</button>
-      </div>
+    <section id="lite-games" class="section">
+  <h2>🎮 Lite Games</h2>
+
+  <div class="game-switch">
+    <button class="btn-switch" onclick="showGame('fruit')">🍉 Fruit Slice</button>
+    <button class="btn-switch" onclick="showGame('balloon')">🎈 Balloon Pop</button>
+  </div>
+
+  <div id="fruit-game" class="game-area">
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+  </div>
+
+  <div id="balloon-game" class="game-area" style="display:none; position:relative; width:400px; height:400px; background:#222; overflow:hidden; border-radius:12px;"></div>
     </section>
 
     <footer>
