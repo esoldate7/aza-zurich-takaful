@@ -1,26 +1,41 @@
-// ========== SECTION SWITCHER ==========
-function showSection(id) {
-  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-// ========== GAME SWITCHER ==========
-function showGame(type) {
-  // Sembunyi semua
-  document.getElementById("fruit-game").style.display = "none";
-  document.getElementById("balloon-game").style.display = "none";
+// ====================================================
+// ========== SECTION SWITCHER ========================
+// ====================================================
 
-  // Henti game bila tukar
-  stopBalloonGame?.();
+function showSection(id) {
+  document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
+  const target = document.getElementById(id);
+  if (target) target.classList.add("active");
+}
+
+// ====================================================
+// ========== GAME SWITCHER ===========================
+// ====================================================
+
+function showGame(type) {
+  const fruitGame = document.getElementById("fruit-game");
+  const balloonGame = document.getElementById("balloon-game");
+
+  if (!fruitGame || !balloonGame) return;
+
+  fruitGame.style.display = "none";
+  balloonGame.style.display = "none";
+
+  // Hentikan game bila tukar
+  if (typeof stopBalloonGame === "function") stopBalloonGame();
 
   if (type === "fruit") {
-    document.getElementById("fruit-game").style.display = "block";
+    fruitGame.style.display = "block";
   } else if (type === "balloon") {
-    document.getElementById("balloon-game").style.display = "block";
-    startBalloonGame();
+    balloonGame.style.display = "block";
+    if (typeof startBalloonGame === "function") startBalloonGame();
   }
 }
 
-// ========== PRODUK ZURICH ==========
+// ====================================================
+// ========== PRODUK ZURICH ===========================
+// ====================================================
+
 const products = [
   { name: "Z-Drive Assist", desc: "Perlindungan kenderaan menyeluruh dengan bantuan di jalan raya 24 jam." },
   { name: "Z-Motor", desc: "Pelan takaful komprehensif untuk motosikal dengan manfaat kemalangan & kehilangan." },
@@ -31,17 +46,19 @@ const products = [
 ];
 
 const productList = document.getElementById("product-list");
-products.forEach((p, index) => {
-  const div = document.createElement("div");
-  div.className = "product-card";
-  div.innerHTML = `
-    <h3>${p.name}</h3>
-    <p>${p.desc}</p>
-    <button class="btn-info" onclick="showProductInfo(${index})">Maklumat</button>
-    <button class="btn-quote" onclick="openQuoteForm('${p.name}')">Request Quotation</button>
-  `;
-  productList.appendChild(div);
-});
+if (productList) {
+  products.forEach((p, index) => {
+    const div = document.createElement("div");
+    div.className = "product-card";
+    div.innerHTML = `
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <button class="btn-info" onclick="showProductInfo(${index})">Maklumat</button>
+      <button class="btn-quote" onclick="openQuoteForm('${p.name}')">Request Quotation</button>
+    `;
+    productList.appendChild(div);
+  });
+}
 
 function showProductInfo(index) {
   const p = products[index];
@@ -52,19 +69,17 @@ function openQuoteForm(name) {
   alert(`📝 Borang quotation untuk ${name} akan dibuka di versi seterusnya.`);
 }
 
+// ====================================================
+// ========== FRUIT SLICE GAME ========================
+// ====================================================
 
-// ========== FRUIT SLICE GAME ==========
-// ===============================
-// 🎮 FRUIT SLICE - Tuned Version (BroChat Edition)
-// ===============================
-
-// 🎵 Load sound
+// 🎵 Sound
 const sliceSound = new Audio("assets/slice.mp3");
 sliceSound.volume = 0.6;
 
 // 🍉 Canvas setup
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas?.getContext("2d");
 
 let fruits = [];
 let score = 0;
@@ -72,11 +87,11 @@ let lives = 3;
 let gravity = 0.04;
 let gameOver = false;
 
-// 🎨 UI text setup
-ctx.font = "20px Poppins";
-ctx.fillStyle = "#fff";
+if (ctx) {
+  ctx.font = "20px Poppins";
+  ctx.fillStyle = "#fff";
+}
 
-// 🥝 Fruit class
 class Fruit {
   constructor(x, y, size, color, speedX, speedY) {
     this.x = x;
@@ -91,24 +106,25 @@ class Fruit {
   }
 
   draw() {
+    if (!ctx) return;
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate((this.rotation * Math.PI) / 180);
-    ctx.beginPath();
+
     const grad = ctx.createRadialGradient(0, 0, this.size * 0.2, 0, 0, this.size);
     grad.addColorStop(0, "#fff");
     grad.addColorStop(1, this.color);
     ctx.fillStyle = grad;
+
+    ctx.beginPath();
     ctx.arc(0, 0, this.size, 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
-     // 🔲 Tambah outline supaya bentuk lebih jelas
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(0,0,0,0.25)";
-  ctx.stroke();
 
-  ctx.restore();
-  }
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   update() {
@@ -119,21 +135,22 @@ class Fruit {
   }
 }
 
-// 🍊 Spawn fruits (lebih stabil & konsisten)
 function spawnFruit() {
-  if (gameOver) return;
+  if (gameOver || !canvas) return;
 
   const size = 60 + Math.random() * 25;
   const x = 60 + Math.random() * (canvas.width - 120);
   const y = canvas.height + size;
-  const color = `hsl(${Math.random() * 360}, 90%, 45%)`; // warna lebih vivid
-  const speedX = -1.5 + Math.random() * 3; // gerak kiri-kanan perlahan
-  const speedY = -8 - Math.random() * 3; // naik lebih tinggi (lebih lama di udara)
+  const color = `hsl(${Math.random() * 360}, 90%, 45%)`;
+  const speedX = -1.5 + Math.random() * 3;
+  const speedY = -8 - Math.random() * 3;
+
   fruits.push(new Fruit(x, y, size, color, speedX, speedY));
 }
 
-// 🎯 Animation loop (tuned supaya buah stay lebih lama)
 function animate() {
+  if (!ctx || !canvas) return;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#fff";
   ctx.font = "20px Poppins";
@@ -144,12 +161,9 @@ function animate() {
     fruit.update();
     fruit.draw();
 
-    // Buah jatuh bawah skrin (lebih perlahan)
     if (fruit.y - fruit.size > canvas.height + 50) {
       fruits.splice(index, 1);
-      if (--lives <= 0) {
-        gameOver = true;
-      }
+      if (--lives <= 0) gameOver = true;
     }
   });
 
@@ -162,37 +176,40 @@ function animate() {
   }
 }
 
-// 🍎 Slice detection (lebih responsif)
-canvas.addEventListener("mousemove", (e) => {
-  fruits.forEach((fruit, index) => {
-    const dx = e.offsetX - fruit.x;
-    const dy = e.offsetY - fruit.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+if (canvas) {
+  canvas.addEventListener("mousemove", (e) => {
+    fruits.forEach((fruit, index) => {
+      const dx = e.offsetX - fruit.x;
+      const dy = e.offsetY - fruit.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < fruit.size && !fruit.isSliced) {
-      fruit.isSliced = true;
-      sliceSound.currentTime = 0;
-      sliceSound.play();
-      score += 10;
-      fruits.splice(index, 1);
-    }
+      if (distance < fruit.size && !fruit.isSliced) {
+        fruit.isSliced = true;
+        sliceSound.currentTime = 0;
+        sliceSound.play();
+        score += 10;
+        fruits.splice(index, 1);
+      }
+    });
   });
-});
 
-// 🍌 Start game (spawn lebih cepat)
-setInterval(spawnFruit, 800); // sebelum ni 1500 — sekarang muncul lebih natural
-animate();
+  setInterval(spawnFruit, 800);
+  animate();
+}
 
+// ====================================================
+// ========== BALLOON POP GAME ========================
+// ====================================================
 
-// ========== BALLOON POP GAME ==========
-// ========== BALLOON POP GAME (🌈 BroChat Rainbow Edition) ==========
 let balloonInterval;
 let activeRises = [];
-let popSound = new Audio("assets/balloon-pop.mp3");
+const popSound = new Audio("assets/balloon-pop.mp3");
 popSound.volume = 0.7;
 
 function startBalloonGame() {
   const area = document.getElementById("balloon-game");
+  if (!area) return;
+
   area.innerHTML = "";
   let score = 0;
   let gameOver = false;
@@ -203,13 +220,11 @@ function startBalloonGame() {
   scoreDisplay.textContent = "Score: 0 🎈";
   area.appendChild(scoreDisplay);
 
-  // 🌈 Label bila Rainbow Mode aktif
   const rainbowBanner = document.createElement("div");
   rainbowBanner.className = "rainbow-banner";
   rainbowBanner.textContent = "";
   area.appendChild(rainbowBanner);
 
-  // 🎈 Spawn belon dengan animasi warna & kelajuan rawak
   balloonInterval = setInterval(() => {
     if (gameOver) return;
 
@@ -222,14 +237,12 @@ function startBalloonGame() {
     balloon.style.left = Math.random() * 85 + "%";
     balloon.style.bottom = "0px";
 
-    // 🌈 Warna belon
     if (rainbowMode) {
       const hue = Math.floor(Math.random() * 360);
       balloon.style.filter = `drop-shadow(0 0 6px hsl(${hue},100%,65%))`;
       balloon.style.color = `hsl(${hue},100%,60%)`;
     }
 
-    // 💨 Kelajuan naik rawak
     const riseSpeed = rainbowMode ? 5 + Math.random() * 2 : 3 + Math.random() * 2;
     area.appendChild(balloon);
 
@@ -250,7 +263,6 @@ function startBalloonGame() {
 
     activeRises.push(rise);
 
-    // 💥 Klik untuk pop
     balloon.addEventListener("click", () => {
       balloon.style.transition = "transform 0.1s ease-out";
       balloon.style.transform = "scale(1.4)";
@@ -261,14 +273,12 @@ function startBalloonGame() {
       score++;
       scoreDisplay.textContent = "Score: " + score + " 🎈";
 
-      // 🌈 Aktifkan Rainbow Mode bila score ≥ 10
       if (!rainbowMode && score >= 10) {
         rainbowMode = true;
         rainbowBanner.textContent = "🌈 RAINBOW MODE AKTIF!";
         rainbowBanner.style.animation = "glowText 1s infinite alternate";
       }
 
-      // 🎯 Tamat contoh auto
       if (score >= 30) {
         endBalloonGame("🎉 Anda berjaya pop 30 belon!");
         gameOver = true;
@@ -280,12 +290,14 @@ function startBalloonGame() {
 function stopBalloonGame() {
   clearInterval(balloonInterval);
   activeRises.forEach(clearInterval);
-  document.getElementById("balloon-game").innerHTML = "";
+  const area = document.getElementById("balloon-game");
+  if (area) area.innerHTML = "";
 }
 
 function endBalloonGame(message) {
   clearInterval(balloonInterval);
   activeRises.forEach(clearInterval);
   const area = document.getElementById("balloon-game");
-  area.innerHTML = `<div class="end-msg">${message}</div>`;
+  if (area) area.innerHTML = `<div class="end-msg">${message}</div>`;
 }
+
