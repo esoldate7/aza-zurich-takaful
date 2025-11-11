@@ -73,9 +73,15 @@ function openQuoteForm(name) {
 // ========== FRUIT SLICE GAME ========================
 // ====================================================
 
-// 🎵 Sound
-const sliceSound = new Audio("assets/slice.mp3");
+// 🎵 Load sound (local or stable CDN)
+const sliceSound = new Audio("assets/sounds/slice.mp3");
+const popSound   = new Audio("assets/sounds/pop.mp3");
+const explodeSound = new Audio("assets/sounds/explode.mp3");
+
+// Volume control
 sliceSound.volume = 0.6;
+popSound.volume   = 0.7;
+explodeSound.volume = 0.7;
 
 // 🍉 Canvas setup
 const canvas = document.getElementById("gameCanvas");
