@@ -218,429 +218,587 @@
    Single-file app script — safe init after DOMContentLoaded
    (UI unchanged; only game behavior tuned)
    ==================================================== */
+<script>
+/* ====================================================
+   Single-file app script — safe init after DOMContentLoaded
+   (UI unchanged; only game behavior tuned & balloon wired)
+   ==================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // ---- util
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-  const WA_NUMBER = '60192506999'; // Bro's WA in international format without +
+  // ---- util
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const WA_NUMBER = '60192506999'; // Bro's WA in international format without +
 
-  // ---- header buttons
-  $('#year').textContent = new Date().getFullYear();
-  $('#openGamesBtn').addEventListener('click', () => {
-    window.scrollTo({top: document.getElementById('gamesCard').offsetTop - 10, behavior:'smooth'});
-  });
-  $('#openQuizBtn').addEventListener('click', () => {
-    window.scrollTo({top: document.getElementById('quizSection').offsetTop - 10, behavior:'smooth'});
-  });
+  // ---- header buttons & small fixes
+  $('#year').textContent = new Date().getFullYear();
 
-  /* =========================
-     WAKTU SOLAT & CUACA  (same as before)
-     ========================= */
-  const COORDS = {
-    "WLY01": [3.139, 101.6869], "WLY02": [2.9265, 101.6965, "WLY01"],
-    "SGR01": [3.0738, 101.5183], "PNG01": [5.4164, 100.3327],
-    "PRK01": [4.5975, 101.0901], "JHR01": [1.4927, 103.7414],
-    "KTN01": [6.1254, 102.2381], "KDH01": [6.1184, 100.3685],
-    "MLK01": [2.1896, 102.2501], "NSN01": [2.7258, 101.9424],
-    "PHG01": [3.8126, 103.3256], "PLS01": [6.4447, 100.2046],
-    "SBH01": [5.978, 116.0753], "SWK01": [1.5533, 110.3592],
-    "TRG01": [5.3302, 103.1408], "LBN01": [5.2831, 115.2308]
-  };
+  // openGamesBtn should scroll to lite-games (fixed - was gamesCard)
+  $('#openGamesBtn').addEventListener('click', () => {
+    const tgt = document.getElementById('lite-games');
+    if (tgt) tgt.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  $('#openQuizBtn').addEventListener('click', () => {
+    const tgt = document.getElementById('quizSection');
+    if (tgt) tgt.scrollIntoView({behavior:'smooth', block:'start'});
+  });
 
-  async function fetchWaktuFromESolat(zone) {
-    solatResult.textContent = '⏳ Memuatkan waktu solat...';
-    const zoneToUse = (zone === 'WLY02') ? 'WLY01' : zone;
-    try {
-      const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneToUse}`);
-      const data = await r.json();
-      if (data && data.prayerTime && data.prayerTime[0]) {
-        const d = data.prayerTime[0];
-        solatResult.innerHTML = `
-          <strong>📍 Zon: ${data.zone || zone}</strong><br>
-          🌅 Subuh: <b>${d.fajr}</b> &nbsp; ☀️ Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
-          🕌 Zohor: <b>${d.dhuhr}</b><br>
-          🌇 Asar: <b>${d.asr}</b><br>
-          🌆 Maghrib: <b>${d.maghrib}</b><br>
-          🌃 Isyak: <b>${d.isha}</b><br>
-          📅 <small>${d.date || d.Tarikh || '-'}</small>
-        `;
-      } else {
-        throw new Error('Tiada data eSolat');
-      }
-    } catch (err) {
-      console.warn('eSolat failed', err);
-      solatResult.textContent = '❌ Gagal memuatkan waktu solat (API eSolat).';
-    }
-  }
+  /* =========================
+     WAKTU SOLAT & CUACA  (same as before)
+     ========================= */
+  const COORDS = {
+    "WLY01": [3.139, 101.6869], "WLY02": [2.9265, 101.6965, "WLY01"],
+    "SGR01": [3.0738, 101.5183], "PNG01": [5.4164, 100.3327],
+    "PRK01": [4.5975, 101.0901], "JHR01": [1.4927, 103.7414],
+    "KTN01": [6.1254, 102.2381], "KDH01": [6.1184, 100.3685],
+    "MLK01": [2.1896, 102.2501], "NSN01": [2.7258, 101.9424],
+    "PHG01": [3.8126, 103.3256], "PLS01": [6.4447, 100.2046],
+    "SBH01": [5.978, 116.0753], "SWK01": [1.5533, 110.3592],
+    "TRG01": [5.3302, 103.1408], "LBN01": [5.2831, 115.2308]
+  };
 
-  async function fetchCuacaByCoords(lat, lon){
-    cuacaResult.textContent = '⛅ Memuatkan cuaca...';
-    try {
-      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
-      const d = await r.json();
-      if (d && d.current_weather) {
-        cuacaResult.innerHTML = `🌡️ ${d.current_weather.temperature}°C — ⛅ Kekuatan angin: ${d.current_weather.windspeed} km/h`;
-      } else {
-        throw new Error('no weather');
-      }
-    } catch (err) {
-      console.warn('weather failed', err);
-      cuacaResult.textContent = '❌ Gagal memuatkan cuaca.';
-    }
-  }
+  async function fetchWaktuFromESolat(zone) {
+    solatResult.textContent = ' Memuatkan waktu solat...';
+    const zoneToUse = (zone === 'WLY02') ? 'WLY01' : zone;
+    try {
+      const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zoneToUse}`);
+      const data = await r.json();
+      if (data && data.prayerTime && data.prayerTime[0]) {
+        const d = data.prayerTime[0];
+        solatResult.innerHTML = `
+          <strong> Zon: ${data.zone || zone}</strong><br>
+           Subuh: <b>${d.fajr}</b> &nbsp;  Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
+           Zohor: <b>${d.dhuhr}</b><br>
+           Asar: <b>${d.asr}</b><br>
+           Maghrib: <b>${d.maghrib}</b><br>
+           Isyak: <b>${d.isha}</b><br>
+           <small>${d.date || d.Tarikh || '-'}</small>
+        `;
+      } else {
+        throw new Error('Tiada data eSolat');
+      }
+    } catch (err) {
+      console.warn('eSolat failed', err);
+      solatResult.textContent = ' Gagal memuatkan waktu solat (API eSolat).';
+    }
+  }
 
-  negeriSelect.addEventListener('change', () => {
-    const zone = negeriSelect.value;
-    if (!zone) return;
-    fetchWaktuFromESolat(zone);
-    const c = COORDS[zone];
-    if (c) fetchCuacaByCoords(c[0], c[1]);
-  });
+  async function fetchCuacaByCoords(lat, lon){
+    cuacaResult.textContent = ' Memuatkan cuaca...';
+    try {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+      const d = await r.json();
+      if (d && d.current_weather) {
+        cuacaResult.innerHTML = ` ${d.current_weather.temperature}°C —  Kekuatan angin: ${d.current_weather.windspeed} km/h`;
+      } else {
+        throw new Error('no weather');
+      }
+    } catch (err) {
+      console.warn('weather failed', err);
+      cuacaResult.textContent = ' Gagal memuatkan cuaca.';
+    }
+  }
 
-  btnDetect.addEventListener('click', () => {
-    if (!navigator.geolocation) { alert('Geolocation tidak disokong pada peranti ini.'); return; }
-    navigator.geolocation.getCurrentPosition(async pos => {
-      const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      try {
-        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-        const jd = await res.json();
-        const negeriName = jd.principalSubdivision || jd.city || jd.locality;
-        const zoneMap = {
-          "Kuala Lumpur":"WLY01","Putrajaya":"WLY02","Selangor":"SGR01","Pulau Pinang":"PNG01","Perak":"PRK01",
-          "Johor":"JHR01","Kelantan":"KTN01","Kedah":"KDH01","Melaka":"MLK01","Negeri Sembilan":"NSN01",
-          "Pahang":"PHG01","Perlis":"PLS01","Sabah":"SBH01","Sarawak":"SWK01","Terengganu":"TRG01","Labuan":"LBN01"
-        };
-        let pickedZone = null;
-        for (const [k,v] of Object.entries(zoneMap)){
-          if (negeriName && negeriName.toLowerCase().includes(k.toLowerCase())) { pickedZone = v; break; }
-        }
-        if (!pickedZone) { fetchCuacaByCoords(lat, lon); alert('Tidak dapat kenal pasti negeri secara automatik. Sila pilih negeri secara manual.'); return; }
-        negeriSelect.value = pickedZone;
-        fetchWaktuFromESolat(pickedZone);
-        fetchCuacaByCoords(lat, lon);
-      } catch (err) {
-        console.warn('reverse geocode failed', err);
-        alert('Gagal detect lokasi secara automatik. Sila pilih negeri secara manual.');
-      }
-    }, () => { alert('Akses lokasi ditolak. Sila pilih negeri secara manual.'); }, {timeout:10000});
-  });
+  negeriSelect.addEventListener('change', () => {
+    const zone = negeriSelect.value;
+    if (!zone) return;
+    fetchWaktuFromESolat(zone);
+    const c = COORDS[zone];
+    if (c) fetchCuacaByCoords(c[0], c[1]);
+  });
 
-  /* =========================
-     PRODUK ZURICH - grid + modal + whatsapp form
-     ========================= */
-  const produkList = [
-    { id:'zdrive', title:'Z-Drive Assist', desc:'Bantuan tepi jalan 24/7, towing & khidmat kecemasan.' },
-    { id:'zmotor', title:'Z-Motor', desc:'Pelan Takaful Motor untuk perlindungan kemalangan, kecurian & kebakaran.' },
-    { id:'zrider', title:'Z-Rider', desc:'Takaful khas untuk penunggang motosikal & skuter.' },
-    { id:'ztravel', title:'Z-Travel', desc:'Perlindungan perjalanan — kelewatan, kehilangan bagasi & kecemasan perubatan.' },
-    { id:'zpa', title:'Personal Accident', desc:'Perlindungan kemalangan diri 24/7.' },
-    { id:'zfirebiz', title:'Fire Takaful (Business)', desc:'Perlindungan premis perniagaan daripada kebakaran & kerugian aset.' }
-  ];
-  const grid = $('#produkGrid');
-  produkList.forEach(p => {
-    const el = document.createElement('div');
-    el.className = 'produk-card';
-    el.dataset.id = p.id;
-    el.innerHTML = `<h4>${p.title}</h4><p>${p.desc}</p>`;
-    el.addEventListener('click', ()=> openProdukModal(p));
-    grid.appendChild(el);
-  });
+  btnDetect.addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Geolocation tidak disokong pada peranti ini.'); return; }
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      try {
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        const jd = await res.json();
+        const negeriName = jd.principalSubdivision || jd.city || jd.locality;
+        const zoneMap = {
+          "Kuala Lumpur":"WLY01","Putrajaya":"WLY02","Selangor":"SGR01","Pulau Pinang":"PNG01","Perak":"PRK01",
+          "Johor":"JHR01","Kelantan":"KTN01","Kedah":"KDH01","Melaka":"MLK01","Negeri Sembilan":"NSN01",
+          "Pahang":"PHG01","Perlis":"PLS01","Sabah":"SBH01","Sarawak":"SWK01","Terengganu":"TRG01","Labuan":"LBN01"
+        };
+        let pickedZone = null;
+        for (const [k,v] of Object.entries(zoneMap)){
+          if (negeriName && negeriName.toLowerCase().includes(k.toLowerCase())) { pickedZone = v; break; }
+        }
+        if (!pickedZone) { fetchCuacaByCoords(lat, lon); alert('Tidak dapat kenal pasti negeri secara automatik. Sila pilih negeri secara manual.'); return; }
+        negeriSelect.value = pickedZone;
+        fetchWaktuFromESolat(pickedZone);
+        fetchCuacaByCoords(lat, lon);
+      } catch (err) {
+        console.warn('reverse geocode failed', err);
+        alert('Gagal detect lokasi secara automatik. Sila pilih negeri secara manual.');
+      }
+    }, () => { alert('Akses lokasi ditolak. Sila pilih negeri secara manual.'); }, {timeout:10000});
+  });
 
-  const modalProduk = $('#modalProduk');
-  const produkInfoBox = $('#produkInfoBox');
-  const closeProduk = $('#closeProduk');
-  const quoteForm = $('#quoteForm');
-  const cancelQuote = $('#cancelQuote');
+  /* =========================
+     PRODUK ZURICH - grid + modal + whatsapp form
+     ========================= */
+  const produkList = [
+    { id:'zdrive', title:'Z-Drive Assist', desc:'Bantuan tepi jalan 24/7, towing & khidmat kecemasan.' },
+    { id:'zmotor', title:'Z-Motor', desc:'Pelan Takaful Motor untuk perlindungan kemalangan, kecurian & kebakaran.' },
+    { id:'zrider', title:'Z-Rider', desc:'Takaful khas untuk penunggang motosikal & skuter.' },
+    { id:'ztravel', title:'Z-Travel', desc:'Perlindungan perjalanan — kelewatan, kehilangan bagasi & kecemasan perubatan.' },
+    { id:'zpa', title:'Personal Accident', desc:'Perlindungan kemalangan diri 24/7.' },
+    { id:'zfirebiz', title:'Fire Takaful (Business)', desc:'Perlindungan premis perniagaan daripada kebakaran & kerugian aset.' }
+  ];
+  const grid = $('#produkGrid');
+  produkList.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'produk-card';
+    el.dataset.id = p.id;
+    el.innerHTML = `<h4>${p.title}</h4><p>${p.desc}</p>`;
+    el.addEventListener('click', ()=> openProdukModal(p));
+    grid.appendChild(el);
+  });
 
-  function openProdukModal(p){
-    produkInfoBox.innerHTML = `<h3>${p.title}</h3><p>${p.desc}</p>`;
-    modalProduk.classList.add('show');
-    modalProduk.setAttribute('aria-hidden','false');
-    $('#q_nama').value = ''; $('#q_tel').value = ''; $('#q_email').value = ''; $('#q_msg').value = '';
-    quoteForm.dataset.product = p.title;
-  }
-  closeProduk.addEventListener('click', ()=> {
-    modalProduk.classList.remove('show');
-    modalProduk.setAttribute('aria-hidden','true');
-  });
-  window.addEventListener('click', e=> { if (e.target === modalProduk) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }});
-  cancelQuote.addEventListener('click', ()=> { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); });
+  const modalProduk = $('#modalProduk');
+  const produkInfoBox = $('#produkInfoBox');
+  const closeProduk = $('#closeProduk');
+  const quoteForm = $('#quoteForm');
+  const cancelQuote = $('#cancelQuote');
 
-  quoteForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nama = $('#q_nama').value.trim();
-    const tel = $('#q_tel').value.trim();
-    const email = $('#q_email').value.trim();
-    const msg = $('#q_msg').value.trim();
-    const prod = quoteForm.dataset.product || 'Zurich Takaful';
-    const text = `Assalamualaikum, saya nak minta quotation produk ${prod}.%0ANama: ${nama}%0ATelefon: ${tel}%0AEmail: ${email}%0AMesej: ${msg}`;
-    window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, '_blank');
-    produkInfoBox.insertAdjacentHTML('beforeend', `<p style="color:green;margin-top:8px">✅ Borang dibuka di WhatsApp</p>`);
-    setTimeout(()=>{ modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }, 1800);
-  });
+  function openProdukModal(p){
+    produkInfoBox.innerHTML = `<h3>${p.title}</h3><p>${p.desc}</p>`;
+    modalProduk.classList.add('show');
+    modalProduk.setAttribute('aria-hidden','false');
+    $('#q_nama').value = ''; $('#q_tel').value = ''; $('#q_email').value = ''; $('#q_msg').value = '';
+    quoteForm.dataset.product = p.title;
+  }
+  closeProduk.addEventListener('click', ()=> {
+    modalProduk.classList.remove('show');
+    modalProduk.setAttribute('aria-hidden','true');
+  });
+  window.addEventListener('click', e=> { if (e.target === modalProduk) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }});
+  cancelQuote.addEventListener('click', ()=> { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); });
 
-  /* =========================
-     QUIZ
-     ========================= */
-  const quizData = [
-    { q:"Apakah tujuan utama takaful?", o:["Tolong-menolong (mutual help)","Untung individu semata","Sistem insurans konvensional"], a:0 },
-    { q:"Produk mana sesuai untuk penunggang motosikal/skuter?", o:["Z-Rider","Z-Travel","Fire Takaful"], a:0 },
-    { q:"Apakah yang Z-Drive Assist tawarkan?", o:["Bantuan tepi jalan & towing","Takaful nyawa","Insurans rumah"], a:0 },
-    { q:"Apakah kelebihan takaful berbanding insurans konvensional?", o:["Konsep tolong-menolong & tabarru'","Bayaran premium lebih rendah sentiasa","Tiada klausa"], a:0 }
-  ];
-  let qIndex = 0, qScore = 0;
-  const quizQ = $('#quizQuestion'), quizO = $('#quizOptions'), startQuizBtn = $('#startQuiz');
+  quoteForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nama = $('#q_nama').value.trim();
+    const tel = $('#q_tel').value.trim();
+    const email = $('#q_email').value.trim();
+    const msg = $('#q_msg').value.trim();
+    const prod = quoteForm.dataset.product || 'Zurich Takaful';
+    const text = `Assalamualaikum, saya nak minta quotation produk ${prod}.%0ANama: ${nama}%0ATelefon: ${tel}%0AEmail: ${email}%0AMesej: ${msg}`;
+    window.open(`https://wa.me/${WA_NUMBER}?text=${text}`, '_blank');
+    produkInfoBox.insertAdjacentHTML('beforeend', `<p style="color:green;margin-top:8px"> Borang dibuka di WhatsApp</p>`);
+    setTimeout(()=>{ modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }, 1800);
+  });
 
-  function showQuizQuestion(){
-    const q = quizData[qIndex];
-    quizQ.textContent = q.q;
-    quizO.innerHTML = '';
-    q.o.forEach((opt, i) => {
-      const b = document.createElement('button'); b.className='cta'; b.textContent = opt;
-      b.addEventListener('click', () => {
-        if (i === q.a) qScore++;
-        qIndex++;
-        if (qIndex < quizData.length) showQuizQuestion();
-        else finishQuiz();
-      });
-      quizO.appendChild(b);
-    });
-  }
-  function finishQuiz(){
-    quizQ.innerHTML = `✅ Kuiz Tamat! Skor: <strong>${qScore}/${quizData.length}</strong>`;
-    quizO.innerHTML = `<button id="quizRestart" class="cta">Ulang Kuiz</button>`;
-    $('#quizRestart').addEventListener('click', ()=> {
-      qIndex=0; qScore=0; startQuizBtn.style.display='inline-block'; quizQ.textContent='Tekan "Mula Kuiz" untuk mula.'; quizO.innerHTML='';
-    });
-  }
-  startQuizBtn.addEventListener('click', () => { startQuizBtn.style.display='none'; qIndex=0; qScore=0; showQuizQuestion(); });
+  /* =========================
+     QUIZ
+     ========================= */
+  const quizData = [
+    { q:"Apakah tujuan utama takaful?", o:["Tolong-menolong (mutual help)","Untung individu semata","Sistem insurans konvensional"], a:0 },
+    { q:"Produk mana sesuai untuk penunggang motosikal/skuter?", o:["Z-Rider","Z-Travel","Fire Takaful"], a:0 },
+    { q:"Apakah yang Z-Drive Assist tawarkan?", o:["Bantuan tepi jalan & towing","Takaful nyawa","Insurans rumah"], a:0 },
+    { q:"Apakah kelebihan takaful berbanding insurans konvensional?", o:["Konsep tolong-menolong & tabarru'","Bayaran premium lebih rendah sentiasa","Tiada klausa"], a:0 }
+  ];
+  let qIndex = 0, qScore = 0;
+  const quizQ = $('#quizQuestion'), quizO = $('#quizOptions'), startQuizBtn = $('#startQuiz');
 
-  /* =========================
-     FRUIT SLICE GAME (tuned)
-     ========================= */
-  const openFruitGameBtn = $('#openFruitGame');
-  const fruitModal = $('#fruitModal');
-  const fgCanvas = $('#fruitCanvas');
-  const fgPause = $('#fgPause'); const fgRestart = $('#fgRestart'); const fgClose = $('#fgClose');
-  const fgScore = $('#fgScore'); const fgOverlay = $('#fgOverlay'); const fgFinalScore = $('#fgFinalScore'); const fgOverlayRestart = $('#fgOverlayRestart');
+  function showQuizQuestion(){
+    const q = quizData[qIndex];
+    quizQ.textContent = q.q;
+    quizO.innerHTML = '';
+    q.o.forEach((opt, i) => {
+      const b = document.createElement('button'); b.className='cta'; b.textContent = opt;
+      b.addEventListener('click', () => {
+        if (i === q.a) qScore++;
+        qIndex++;
+        if (qIndex < quizData.length) showQuizQuestion();
+        else finishQuiz();
+      });
+      quizO.appendChild(b);
+    });
+  }
+  function finishQuiz(){
+    quizQ.innerHTML = ` Kuiz Tamat! Skor: <strong>${qScore}/${quizData.length}</strong>`;
+    quizO.innerHTML = `<button id="quizRestart" class="cta">Ulang Kuiz</button>`;
+    $('#quizRestart').addEventListener('click', ()=> {
+      qIndex=0; qScore=0; startQuizBtn.style.display='inline-block'; quizQ.textContent='Tekan "Mula Kuiz" untuk mula.'; quizO.innerHTML='';
+    });
+  }
+  startQuizBtn.addEventListener('click', () => { startQuizBtn.style.display='none'; qIndex=0; qScore=0; showQuizQuestion(); });
 
-  // preload audio, reduce volumes slightly for nicer UX
-  const S_SLICE = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_896b8b71f1.mp3?filename=slice-1.mp3');
-  const S_POP = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_2f6b6b1.mp3?filename=pop-1.mp3');
-  const S_BOMB = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_f7a0b7b0.mp3?filename=explode-01.mp3');
-  [S_SLICE, S_POP, S_BOMB].forEach(a => { a.volume = 0.7; a.preload = 'auto'; });
+  /* =========================
+     FRUIT SLICE GAME (tuned)  -- existing modal version (kept as-is)
+     ========================= */
+  const openFruitGameBtn = $('#openFruitGame'); // may be undefined if not present; safe to keep
+  const fruitModal = $('#fruitModal');
+  const fgCanvas = $('#fruitCanvas');
+  const fgPause = $('#fgPause'); const fgRestart = $('#fgRestart'); const fgClose = $('#fgClose');
+  const fgScore = $('#fgScore'); const fgOverlay = $('#fgOverlay'); const fgFinalScore = $('#fgFinalScore'); const fgOverlayRestart = $('#fgOverlayRestart');
 
-  // canvas setup
-  let ctx = null, W=0, H=0, DPR=window.devicePixelRatio||1;
-  function resizeFG(){
-    DPR = window.devicePixelRatio || 1;
-    fgCanvas.style.height = (window.innerHeight - 140) + 'px';
-    fgCanvas.style.width = '100%';
-    fgCanvas.width = fgCanvas.clientWidth * DPR;
-    fgCanvas.height = fgCanvas.clientHeight * DPR;
-    ctx = fgCanvas.getContext('2d');
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
-  }
+  // preload audio, reduce volumes slightly for nicer UX
+  const S_SLICE = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_896b8b71f1.mp3?filename=slice-1.mp3');
+  const S_POP = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_2f6b6b1.mp3?filename=pop-1.mp3');
+  const S_BOMB = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_f7a0b7b0.mp3?filename=explode-01.mp3');
+  [S_SLICE, S_POP, S_BOMB].forEach(a => { a.volume = 0.7; a.preload = 'auto'; });
 
-  // game state
-  let fruits = [], particles = [], slicePath = [], isRunning=false, isPaused=false, scoreFG=0, spawnTimer=0, spawnInterval=1100, lastTime=0;
+  // canvas setup for modal fruit (kept)
+  let ctx = null, W=0, H=0, DPR=window.devicePixelRatio||1;
+  function resizeFG(){
+    DPR = window.devicePixelRatio || 1;
+    fgCanvas.style.height = (window.innerHeight - 140) + 'px';
+    fgCanvas.style.width = '100%';
+    fgCanvas.width = fgCanvas.clientWidth * DPR;
+    fgCanvas.height = fgCanvas.clientHeight * DPR;
+    ctx = fgCanvas.getContext('2d');
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
+  }
 
-  // tuned fruit sizes (larger) and gravity/velocity reduced for smoother play
-  const FRUITS = [
-    { name:'apple', color:'#ff5252', r:38, pts:10 },
-    { name:'orange', color:'#ff9800', r:42, pts:12 },
-    { name:'watermelon', color:'#4caf50', r:52, pts:18 },
-    { name:'lemon', color:'#ffeb3b', r:36, pts:9 }
-  ];
-  const BOMB = { name:'bomb', color:'#333', r:40 };
+  // game state (fruit modal) - kept as original tuned implementation
+  let fruits = [], particles = [], slicePath = [], isRunning=false, isPaused=false, scoreFG=0, spawnTimer=0, spawnInterval=1100, lastTime=0;
+  const FRUITS = [
+    { name:'apple', color:'#ff5252', r:38, pts:10 },
+    { name:'orange', color:'#ff9800', r:42, pts:12 },
+    { name:'watermelon', color:'#4caf50', r:52, pts:18 },
+    { name:'lemon', color:'#ffeb3b', r:36, pts:9 }
+  ];
+  const BOMB = { name:'bomb', color:'#333', r:40 };
+  const rand = (a,b) => a + Math.random()*(b-a);
 
-  // helpers
-  const rand = (a,b) => a + Math.random()*(b-a);
-  function spawnItem(){
-    const isBomb = Math.random() < 0.05; // lower bomb chance
-    const x = rand(60, W-60);
-    // velocities tuned: smaller upward velocity and smaller horizontal
-    const vx = rand(-60,60)/1000;
-    if (isBomb){
-      fruits.push({type:BOMB, x, y: H + 80, vx, vy:-rand(480,700), r:BOMB.r, exploded:false});
-    } else {
-      const t = FRUITS[Math.floor(Math.random()*FRUITS.length)];
-      fruits.push({type:t, x, y:H+80, vx, vy:-rand(420,700), r:t.r, cut:false, pts:t.pts, color:t.color});
-    }
-  }
-  function spawnParticles(x,y,color){
-    for (let i=0;i<14;i++){
-      particles.push({x,y,vx:rand(-300,300)/1000,vy:rand(-300,0)/1000,life:rand(500,1000),t:0,color});
-    }
-  }
+  function spawnItem(){
+    const isBomb = Math.random() < 0.05;
+    const x = rand(60, W-60);
+    const vx = rand(-60,60)/1000;
+    if (isBomb){
+      fruits.push({type:BOMB, x, y: H + 80, vx, vy:-rand(480,700), r:BOMB.r, exploded:false});
+    } else {
+      const t = FRUITS[Math.floor(Math.random()*FRUITS.length)];
+      fruits.push({type:t, x, y:H+80, vx, vy:-rand(420,700), r:t.r, cut:false, pts:t.pts, color:t.color});
+    }
+  }
+  function spawnParticles(x,y,color){
+    for (let i=0;i<14;i++){
+      particles.push({x,y,vx:rand(-300,300)/1000,vy:rand(-300,0)/1000,life:rand(500,1000),t:0,color});
+    }
+  }
+  function pointCircle(px,py,cx,cy,r){ const dx=px-cx, dy=py-cy; return dx*dx+dy*dy <= r*r; }
 
-  function pointCircle(px,py,cx,cy,r){ const dx=px-cx, dy=py-cy; return dx*dx+dy*dy <= r*r; }
+  function checkSlice(){
+    if (slicePath.length < 2) return;
+    const path = slicePath.slice(Math.max(0, slicePath.length-12));
+    for (const f of fruits){
+      if (f.cut || (f.type.name==='bomb' && f.exploded)) continue;
+      for (let i=1;i<path.length;i++){
+        const x1=path[i-1].x, y1=path[i-1].y, x2=path[i].x, y2=path[i].y;
+        for (let t=0; t<=1; t+=0.2){
+          const sx = x1 + (x2-x1)*t, sy = y1 + (y2-y1)*t;
+          if (pointCircle(sx,sy,f.x,f.y,f.r * 0.9)){
+            if (f.type.name==='bomb'){
+              try { S_BOMB.currentTime=0; S_BOMB.play(); } catch(e) {}
+              f.exploded=true; endFG(true); return;
+            } else {
+              if (!f.cut){
+                f.cut=true;
+                scoreFG += f.pts || 10;
+                fgScore.textContent = scoreFG;
+                spawnParticles(f.x, f.y, f.color || f.type.color);
+                try { S_SLICE.currentTime=0; S_SLICE.play(); } catch(e) {}
+                setTimeout(()=> { try { S_POP.currentTime=0; S_POP.play(); } catch(e) {} }, 80);
+              }
+            }
+            break;
+          }
+        }
+        if (f.cut) break;
+      }
+    }
+    fruits = fruits.filter(f => !f.cut);
+  }
 
-  function checkSlice(){
-    if (slicePath.length < 2) return;
-    // use a slightly longer sample of recent path to be forgiving
-    const path = slicePath.slice(Math.max(0, slicePath.length-12));
-    for (const f of fruits){
-      if (f.cut || (f.type.name==='bomb' && f.exploded)) continue;
-      for (let i=1;i<path.length;i++){
-        const x1=path[i-1].x, y1=path[i-1].y, x2=path[i].x, y2=path[i].y;
-        // sample a few points along the segment
-        for (let t=0; t<=1; t+=0.2){
-          const sx = x1 + (x2-x1)*t, sy = y1 + (y2-y1)*t;
-          if (pointCircle(sx,sy,f.x,f.y,f.r * 0.9)){ // small forgiving multiplier
-            if (f.type.name==='bomb'){
-              try { S_BOMB.currentTime=0; S_BOMB.play(); } catch(e) {}
-              f.exploded=true; endFG(true); return;
-            } else {
-              if (!f.cut){
-                f.cut=true;
-                scoreFG += f.pts || 10;
-                fgScore.textContent = scoreFG;
-                spawnParticles(f.x, f.y, f.color || f.type.color);
-                // play slice then pop slightly after for impact
-                try { S_SLICE.currentTime=0; S_SLICE.play(); } catch(e) {}
-                setTimeout(()=> { try { S_POP.currentTime=0; S_POP.play(); } catch(e) {} }, 80);
-              }
-            }
-            break;
-          }
-        }
-        if (f.cut) break;
-      }
-    }
-    // remove cut items after a short delay to allow particles
-    fruits = fruits.filter(f => !f.cut);
-  }
+  const GRAVITY = 900;
+  function updateEntities(dt){
+    for (const f of fruits){ f.vy += GRAVITY*(dt/1000); f.x += f.vx * dt; f.y += f.vy * dt; }
+    for (const p of particles){ p.vy += 1200*(dt/1000); p.x += p.vx * dt; p.y += p.vy * dt; p.t += dt; }
+    particles = particles.filter(p => p.t < p.life);
+    fruits = fruits.filter(f => (f.y - f.r) <= (H + 100));
+  }
 
-  // physics constants tuned (lower gravity)
-  const GRAVITY = 900; // px/s^2 (was ~1600 -> slower)
-  function updateEntities(dt){
-    for (const f of fruits){ f.vy += GRAVITY*(dt/1000); f.x += f.vx * dt; f.y += f.vy * dt; }
-    for (const p of particles){ p.vy += 1200*(dt/1000); p.x += p.vx * dt; p.y += p.vy * dt; p.t += dt; }
-    particles = particles.filter(p => p.t < p.life);
-    fruits = fruits.filter(f => (f.y - f.r) <= (H + 100));
-  }
+  function draw(){
+    if (!ctx) return;
+    ctx.clearRect(0,0,W,H);
+    for (const f of fruits){
+      ctx.save(); ctx.translate(f.x, f.y);
+      ctx.beginPath(); ctx.arc(6,6,f.r+6,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.14)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(0,0,f.r,0,Math.PI*2);
+      ctx.fillStyle = f.color || f.type.color; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-f.r*0.35, -f.r*0.35, f.r*0.3, f.r*0.18, 0, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
+      if (f.type.name==='bomb'){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(0,0,f.r*0.55,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font=`${Math.max(14, Math.floor(f.r*0.45))}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('',0,0);
+      }
+      ctx.restore();
+    }
+    for (const p of particles){ ctx.beginPath(); ctx.arc(p.x, p.y, 4,0,Math.PI*2); ctx.fillStyle = p.color || '#fff'; ctx.fill(); }
 
-  function draw(){
-    if (!ctx) return;
-    ctx.clearRect(0,0,W,H);
-    // fruits
-    for (const f of fruits){
-      ctx.save(); ctx.translate(f.x, f.y);
-      // shadow
-      ctx.beginPath(); ctx.arc(6,6,f.r+6,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.14)'; ctx.fill();
-      // main
-      ctx.beginPath(); ctx.arc(0,0,f.r,0,Math.PI*2);
-      ctx.fillStyle = f.color || f.type.color; ctx.fill();
-      // small highlight
-      ctx.beginPath(); ctx.ellipse(-f.r*0.35, -f.r*0.35, f.r*0.3, f.r*0.18, 0, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fill();
-      // bomb mark
-      if (f.type.name==='bomb'){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(0,0,f.r*0.55,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font=`${Math.max(14, Math.floor(f.r*0.45))}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('💣',0,0);
-      }
-      ctx.restore();
-    }
-    // particles
-    for (const p of particles){ ctx.beginPath(); ctx.arc(p.x, p.y, 4,0,Math.PI*2); ctx.fillStyle = p.color || '#fff'; ctx.fill(); }
+    if (slicePath.length){
+      for (let i=1;i<slicePath.length;i++){
+        const a = i / slicePath.length;
+        ctx.beginPath(); ctx.moveTo(slicePath[i-1].x, slicePath[i-1].y); ctx.lineTo(slicePath[i].x, slicePath[i].y);
+        ctx.lineWidth = 6 * (0.6 + 0.4*a);
+        ctx.strokeStyle = `rgba(255,255,255,${0.15 + 0.8*a})`; ctx.lineCap='round'; ctx.stroke();
+      }
+    }
+  }
 
-    // slice path (fade older points)
-    if (slicePath.length){
-      for (let i=1;i<slicePath.length;i++){
-        const a = i / slicePath.length;
-        ctx.beginPath(); ctx.moveTo(slicePath[i-1].x, slicePath[i-1].y); ctx.lineTo(slicePath[i].x, slicePath[i].y);
-        ctx.lineWidth = 6 * (0.6 + 0.4*a);
-        ctx.strokeStyle = `rgba(255,255,255,${0.15 + 0.8*a})`; ctx.lineCap='round'; ctx.stroke();
-      }
-    }
-  }
+  function loop(ts){
+    if (!isRunning) return;
+    const dt = Math.min(40, ts - lastTime); lastTime = ts;
+    if (!isPaused){
+      spawnTimer += dt;
+      if (spawnTimer > spawnInterval){ spawnTimer = 0; spawnInterval = rand(800,1600); spawnItem(); }
+      updateEntities(dt); checkSlice();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
 
-  function loop(ts){
-    if (!isRunning) return;
-    const dt = Math.min(40, ts - lastTime); lastTime = ts;
-    if (!isPaused){
-      spawnTimer += dt;
-      // spawn interval varies (slower average)
-      if (spawnTimer > spawnInterval){ spawnTimer = 0; spawnInterval = rand(800,1600); spawnItem(); }
-      updateEntities(dt); checkSlice();
-    }
-    draw();
-    requestAnimationFrame(loop);
-  }
+  // input handling for modal fruit
+  let drawing = false;
+  function addPoint(x,y){ slicePath.push({x,y,t:Date.now()}); if (slicePath.length>30) slicePath.shift(); }
+  function startDraw(x,y){ drawing=true; slicePath = [{x,y,t:Date.now()}]; addPoint(x,y); }
+  function moveDraw(x,y){ if(!drawing) return; addPoint(x,y); }
+  function endDraw(){ drawing=false; setTimeout(()=>slicePath=[],200); }
 
-  // input handling
-  let drawing = false;
-  function addPoint(x,y){ slicePath.push({x,y,t:Date.now()}); if (slicePath.length>30) slicePath.shift(); }
-  function startDraw(x,y){ drawing=true; slicePath = [{x,y,t:Date.now()}]; addPoint(x,y); }
-  function moveDraw(x,y){ if(!drawing) return; addPoint(x,y); }
-  function endDraw(){ drawing=false; setTimeout(()=>slicePath=[],200); }
+  fgCanvas.addEventListener('mousedown', e => {
+    const r = fgCanvas.getBoundingClientRect();
+    startDraw( (e.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (e.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
+  });
+  fgCanvas.addEventListener('mousemove', e => {
+    const r = fgCanvas.getBoundingClientRect();
+    moveDraw( (e.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (e.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
+  });
+  window.addEventListener('mouseup', () => endDraw());
+  fgCanvas.addEventListener('touchstart', e => {
+    e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect();
+    startDraw( (t.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (t.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
+  }, {passive:false});
+  fgCanvas.addEventListener('touchmove', e => {
+    e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect();
+    moveDraw( (t.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (t.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
+  }, {passive:false});
+  fgCanvas.addEventListener('touchend', e => { e.preventDefault(); endDraw(); }, {passive:false});
 
-  // Use boundingClientRect and scale to DPR
-  fgCanvas.addEventListener('mousedown', e => {
-    const r = fgCanvas.getBoundingClientRect();
-    startDraw( (e.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (e.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
-  });
-  fgCanvas.addEventListener('mousemove', e => {
-    const r = fgCanvas.getBoundingClientRect();
-    moveDraw( (e.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (e.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
-  });
-  window.addEventListener('mouseup', () => endDraw());
-  fgCanvas.addEventListener('touchstart', e => {
-    e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect();
-    startDraw( (t.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (t.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
-  }, {passive:false});
-  fgCanvas.addEventListener('touchmove', e => {
-    e.preventDefault(); const t = e.touches[0]; const r = fgCanvas.getBoundingClientRect();
-    moveDraw( (t.clientX - r.left) * (fgCanvas.width/fgCanvas.clientWidth) / DPR, (t.clientY - r.top) * (fgCanvas.height/fgCanvas.clientHeight) / DPR );
-  }, {passive:false});
-  fgCanvas.addEventListener('touchend', e => { e.preventDefault(); endDraw(); }, {passive:false});
+  function startFG(){
+    // reset
+    fruits = []; particles = []; slicePath = []; scoreFG = 0; fgScore.textContent = '0';
+    spawnTimer = 0; spawnInterval = 1100; isRunning = true; isPaused = false; fgOverlay.classList.remove('show');
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+  function pauseFG(){ isPaused = !isPaused; fgPause.textContent = isPaused ? ' Main' : ' Jeda'; }
+  function endFG(bomb=false){
+    isRunning = false;
+    fgFinalScore.textContent = scoreFG;
+    document.getElementById('fgOverlayTitle').textContent = bomb ? 'Boom! Game Over ' : 'Game Over';
+    fgOverlay.classList.add('show');
+  }
 
-  function startFG(){
-    // reset
-    fruits = []; particles = []; slicePath = []; scoreFG = 0; fgScore.textContent = '0';
-    spawnTimer = 0; spawnInterval = 1100; isRunning = true; isPaused = false; fgOverlay.classList.remove('show');
-    lastTime = performance.now();
-    // subtle start sound removed to avoid noise at launch
-    requestAnimationFrame(loop);
-  }
-  function pauseFG(){ isPaused = !isPaused; fgPause.textContent = isPaused ? '▶️ Main' : '⏸️ Jeda'; }
-  function endFG(bomb=false){
-    isRunning = false;
-    fgFinalScore.textContent = scoreFG;
-    document.getElementById('fgOverlayTitle').textContent = bomb ? 'Boom! Game Over 💥' : 'Game Over';
-    fgOverlay.classList.add('show');
-  }
+  // wire UI for modal fruit: open/close/restart/pause
+  if (openFruitGameBtn) {
+    openFruitGameBtn.addEventListener('click', () => {
+      fruitModal.classList.add('show'); fruitModal.setAttribute('aria-hidden','false');
+      resizeFG(); startFG();
+    });
+  }
+  if (fgClose) fgClose.addEventListener('click', () => { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; });
+  if (fgRestart) fgRestart.addEventListener('click', () => { startFG(); });
+  if (fgPause) fgPause.addEventListener('click', () => { pauseFG(); });
+  if (fgOverlayRestart) fgOverlayRestart.addEventListener('click', () => { fgOverlay.classList.remove('show'); startFG(); });
 
-  // wire UI
-  openFruitGameBtn.addEventListener('click', () => {
-    fruitModal.classList.add('show'); fruitModal.setAttribute('aria-hidden','false');
-    resizeFG(); startFG();
-  });
-  fgClose.addEventListener('click', () => { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; });
-  fgRestart.addEventListener('click', () => { startFG(); });
-  fgPause.addEventListener('click', () => { pauseFG(); });
-  fgOverlayRestart.addEventListener('click', () => { fgOverlay.classList.remove('show'); startFG(); });
+  function resizeFG(){
+    DPR = window.devicePixelRatio || 1;
+    fgCanvas.style.height = (window.innerHeight - 140) + 'px';
+    fgCanvas.style.width = '100%';
+    fgCanvas.width = fgCanvas.clientWidth * DPR;
+    fgCanvas.height = fgCanvas.clientHeight * DPR;
+    ctx = fgCanvas.getContext('2d');
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
+  }
+  window.addEventListener('resize', () => { if (fruitModal.classList.contains('show')) resizeFG(); });
 
-  function resizeFG(){
-    DPR = window.devicePixelRatio || 1;
-    fgCanvas.style.height = (window.innerHeight - 140) + 'px';
-    fgCanvas.style.width = '100%';
-    fgCanvas.width = fgCanvas.clientWidth * DPR;
-    fgCanvas.height = fgCanvas.clientHeight * DPR;
-    ctx = fgCanvas.getContext('2d');
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-    W = fgCanvas.clientWidth; H = fgCanvas.clientHeight;
-  }
-  window.addEventListener('resize', () => { if (fruitModal.classList.contains('show')) resizeFG(); });
+  // allow Esc to close modals
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape'){
+      if (modalProduk.classList.contains('show')) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); }
+      if (fruitModal.classList.contains('show')) { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; }
+    }
+  });
 
-  // allow Esc to close
-  document.addEventListener('keydown', (e)=>{
-    if (e.key === 'Escape'){ if (modalProduk.classList.contains('show')) { modalProduk.classList.remove('show'); modalProduk.setAttribute('aria-hidden','true'); } if (fruitModal.classList.contains('show')) { fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true'); isRunning=false; } }
-  });
+  /* =========================
+     BALLOON POP GAME (inline in lite-games) - Rainbow Edition
+     ========================= */
+  let balloonInterval = null;
+  let activeRises = [];
+  // use S_POP preloaded (exists) as pop sound; fallback to a CDN if needed
+  const BALLOON_POP = S_POP || new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_2f6b6b1.mp3?filename=pop-1.mp3');
+  BALLOON_POP.volume = 0.75;
 
-  // small helpful console log
-  console.info('AZA Zurich app initialized — Fruit Slice tuned.');
+  function startBalloonGame() {
+    // stop any previous first
+    stopBalloonGame();
+
+    const area = document.getElementById("balloon-game");
+    if (!area) return;
+    area.innerHTML = ""; // clear
+    activeRises = [];
+    let score = 0;
+    let gameOver = false;
+    let rainbowMode = false;
+
+    const scoreDisplay = document.createElement("div");
+    scoreDisplay.className = "score-display";
+    scoreDisplay.textContent = "Score: 0 ";
+    area.appendChild(scoreDisplay);
+
+    const rainbowBanner = document.createElement("div");
+    rainbowBanner.className = "rainbow-banner";
+    rainbowBanner.textContent = "";
+    area.appendChild(rainbowBanner);
+
+    // spawn
+    balloonInterval = setInterval(() => {
+      if (gameOver) return;
+
+      const balloon = document.createElement("div");
+      balloon.className = "balloon";
+      balloon.textContent = "";
+      const size = 35 + Math.random() * 25;
+      balloon.style.fontSize = `${size}px`;
+      balloon.style.left = Math.random() * 85 + "%";
+      balloon.style.bottom = "0px";
+      balloon.style.userSelect = "none";
+
+      if (rainbowMode) {
+        const hue = Math.floor(Math.random() * 360);
+        balloon.style.filter = `drop-shadow(0 0 8px hsl(${hue},100%,65%))`;
+        balloon.style.color = `hsl(${hue},100%,60%)`;
+      }
+
+      const riseSpeed = rainbowMode ? 5 + Math.random() * 2 : 3 + Math.random() * 2;
+      area.appendChild(balloon);
+
+      let bottom = 0;
+      const rise = setInterval(() => {
+        if (gameOver) {
+          if (balloon.parentNode) balloon.remove();
+          clearInterval(rise);
+          return;
+        }
+        bottom += riseSpeed;
+        balloon.style.bottom = bottom + "px";
+        if (bottom > 450) {
+          if (balloon.parentNode) balloon.remove();
+          clearInterval(rise);
+        }
+      }, 40);
+
+      activeRises.push(rise);
+
+      balloon.addEventListener("click", () => {
+        // visual pop
+        balloon.style.transition = "transform 0.12s ease-out, opacity 0.12s";
+        balloon.style.transform = "scale(1.4)";
+        balloon.style.opacity = "0.9";
+        try { BALLOON_POP.currentTime = 0; BALLOON_POP.play(); } catch(e) {}
+        setTimeout(() => { if (balloon.parentNode) balloon.remove(); }, 130);
+        clearInterval(rise);
+        score++;
+        scoreDisplay.textContent = "Score: " + score + " ";
+
+        if (!rainbowMode && score >= 10) {
+          rainbowMode = true;
+          rainbowBanner.textContent = " RAINBOW MODE AKTIF!";
+          rainbowBanner.style.animation = "glowText 1s infinite alternate";
+        }
+
+        if (score >= 30) {
+          // end game
+          endBalloonGame(" Anda berjaya pop 30 belon!");
+          gameOver = true;
+        }
+      });
+    }, 700);
+  }
+
+  function stopBalloonGame() {
+    try { clearInterval(balloonInterval); balloonInterval = null; } catch(e){}
+    if (activeRises && activeRises.length) activeRises.forEach(id => clearInterval(id));
+    activeRises = [];
+    const area = document.getElementById("balloon-game");
+    if (area) area.innerHTML = "";
+  }
+
+  function endBalloonGame(message) {
+    stopBalloonGame();
+    const area = document.getElementById("balloon-game");
+    if (!area) return;
+    const msg = document.createElement('div');
+    msg.className = 'end-msg';
+    msg.textContent = message || 'Game ended';
+    area.appendChild(msg);
+  }
+
+  /* =========================
+     GAME SWITCHER (global) - connects inline Lite Games buttons to logic
+     - keeps UI exactly as is; uses modal Fruit Slice and inline Balloon game
+     ========================= */
+  function showGame(type) {
+    // ensure global access for inline onclicks
+    // hide/show relevant areas and stop/start games properly
+    const fruitArea = document.getElementById("fruit-game");
+    const balloonArea = document.getElementById("balloon-game");
+
+    // tidy up highlight classes on buttons (if present)
+    document.querySelectorAll('.btn-switch').forEach(b => b.classList.remove('active'));
+    // attempt to toggle active class for the clicked one (works with inline onclick attr)
+    try {
+      const btn = document.querySelector(`.btn-switch[onclick="showGame('${type}')"]`);
+      if (btn) btn.classList.add('active');
+    } catch(e){}
+
+    // stop balloon game first to avoid overlap
+    if (typeof stopBalloonGame === 'function') stopBalloonGame();
+
+    // close fruit modal if open
+    if (fruitModal && fruitModal.classList.contains('show')) {
+      fruitModal.classList.remove('show'); fruitModal.setAttribute('aria-hidden','true');
+      isRunning = false;
+    }
+
+    if (type === 'fruit') {
+      // open the modal fruit (keeps UI structure: modal fullscreen as original)
+      fruitModal.classList.add('show'); fruitModal.setAttribute('aria-hidden','false');
+      // ensure canvas resized then start
+      resizeFG();
+      startFG();
+    } else if (type === 'balloon') {
+      // show inline balloon area (the element exists in HTML)
+      if (fruitArea) fruitArea.style.display = 'none';
+      if (balloonArea) {
+        balloonArea.style.display = 'block';
+        startBalloonGame();
+      }
+    }
+  }
+
+  // expose showGame globally so inline onclick attributes work
+  window.showGame = showGame;
+
+  // ensure initial state: do not auto-open anything; leave as is (user clicks)
+  // But if you want to auto-open fruit by default in lite-games, uncomment:
+  // showGame('fruit');
+
+  // small helpful console log
+  console.info('AZA Zurich app initialized — Fruit Slice & Balloon Pop wired.');
 });
 </script>
 </body>
