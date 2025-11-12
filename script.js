@@ -1,41 +1,10 @@
-// ====================================================
-// ========== SECTION SWITCHER ========================
-// ====================================================
-
+// ========== SECTION SWITCHER ==========
 function showSection(id) {
-  document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
-  const target = document.getElementById(id);
-  if (target) target.classList.add("active");
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-// ====================================================
-// ========== GAME SWITCHER ===========================
-// ====================================================
-
-function showGame(type) {
-  const fruitGame = document.getElementById("fruit-game");
-  const balloonGame = document.getElementById("balloon-game");
-
-  if (!fruitGame || !balloonGame) return;
-
-  fruitGame.style.display = "none";
-  balloonGame.style.display = "none";
-
-  // Hentikan game bila tukar
-  if (typeof stopBalloonGame === "function") stopBalloonGame();
-
-  if (type === "fruit") {
-    fruitGame.style.display = "block";
-  } else if (type === "balloon") {
-    balloonGame.style.display = "block";
-    if (typeof startBalloonGame === "function") startBalloonGame();
-  }
-}
-
-// ====================================================
-// ========== PRODUK ZURICH ===========================
-// ====================================================
-
+// ========== PRODUK ZURICH ==========
 const products = [
   { name: "Z-Drive Assist", desc: "Perlindungan kenderaan menyeluruh dengan bantuan di jalan raya 24 jam." },
   { name: "Z-Motor", desc: "Pelan takaful komprehensif untuk motosikal dengan manfaat kemalangan & kehilangan." },
@@ -46,19 +15,17 @@ const products = [
 ];
 
 const productList = document.getElementById("product-list");
-if (productList) {
-  products.forEach((p, index) => {
-    const div = document.createElement("div");
-    div.className = "product-card";
-    div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p>${p.desc}</p>
-      <button class="btn-info" onclick="showProductInfo(${index})">Maklumat</button>
-      <button class="btn-quote" onclick="openQuoteForm('${p.name}')">Request Quotation</button>
-    `;
-    productList.appendChild(div);
-  });
-}
+products.forEach((p, index) => {
+  const div = document.createElement("div");
+  div.className = "product-card";
+  div.innerHTML = `
+    <h3>${p.name}</h3>
+    <p>${p.desc}</p>
+    <button class="btn-info" onclick="showProductInfo(${index})">Maklumat</button>
+    <button class="btn-quote" onclick="openQuoteForm('${p.name}')">Request Quotation</button>
+  `;
+  productList.appendChild(div);
+});
 
 function showProductInfo(index) {
   const p = products[index];
@@ -69,34 +36,49 @@ function openQuoteForm(name) {
   alert(`📝 Borang quotation untuk ${name} akan dibuka di versi seterusnya.`);
 }
 
-// ====================================================
-// ========== FRUIT SLICE GAME ========================
-// ====================================================
+// ========== WAKTU SOLAT ==========
+async function fetchWaktuFromESolat(zone) {
+  const solatResult = document.getElementById("solatResult");
+  solatResult.textContent = '⏳ Memuatkan waktu solat...';
+  try {
+    // 🔧 Override Putrajaya supaya ikut KL (WLY01)
+    if (zone === "WLY02") zone = "WLY01";
 
-// 🎵 Load sound (local or stable CDN)
-const sliceSound = new Audio("assets/sounds/slice.mp3");
-const popSound   = new Audio("assets/sounds/pop.mp3");
-const explodeSound = new Audio("assets/sounds/explode.mp3");
+    const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
+    const data = await r.json();
 
-// Volume control
-sliceSound.volume = 0.6;
-popSound.volume   = 0.7;
-explodeSound.volume = 0.7;
+    if (data && data.prayerTime && data.prayerTime[0]) {
+      const d = data.prayerTime[0];
+      solatResult.innerHTML = `
+        <strong>Zon: ${data.zone || zone}</strong><br>
+        🌅 Subuh: <b>${d.fajr}</b> &nbsp; ☀️ Syuruk: <b>${d.syuruk || d.sunrise || '-'}</b><br>
+        🕌 Zohor: <b>${d.dhuhr}</b> &nbsp; 🌇 Asar: <b>${d.asr}</b><br>
+        🌆 Maghrib: <b>${d.maghrib}</b> &nbsp; 🌃 Isyak: <b>${d.isha}</b><br>
+        <small>Tarikh: ${d.date || '-'}</small>
+      `;
+    } else {
+      throw new Error("Tiada data eSolat");
+    }
+  } catch (err) {
+    solatResult.textContent = '❌ Gagal memuatkan waktu solat.';
+    console.error(err);
+  }
+}
 
-// 🍉 Canvas setup
+// ========== FRUIT SLICE GAME ==========
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas?.getContext("2d");
+const ctx = canvas.getContext("2d");
+const sliceSound = new Audio("assets/slice.mp3");
+sliceSound.volume = 0.6;
 
 let fruits = [];
 let score = 0;
 let lives = 3;
-let gravity = 0.04;
+let gravity = 0.05;
 let gameOver = false;
 
-if (ctx) {
-  ctx.font = "20px Poppins";
-  ctx.fillStyle = "#fff";
-}
+ctx.font = "20px Poppins";
+ctx.fillStyle = "#fff";
 
 class Fruit {
   constructor(x, y, size, color, speedX, speedY) {
@@ -106,68 +88,44 @@ class Fruit {
     this.color = color;
     this.speedX = speedX;
     this.speedY = speedY;
-    this.rotation = Math.random() * 360;
-    this.spin = (Math.random() - 0.5) * 8;
     this.isSliced = false;
   }
-
   draw() {
-    if (!ctx) return;
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate((this.rotation * Math.PI) / 180);
-
-    const grad = ctx.createRadialGradient(0, 0, this.size * 0.2, 0, 0, this.size);
-    grad.addColorStop(0, "#fff");
-    grad.addColorStop(1, this.color);
-    ctx.fillStyle = grad;
-
     ctx.beginPath();
-    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+    const gradient = ctx.createRadialGradient(this.x, this.y, this.size * 0.2, this.x, this.y, this.size);
+    gradient.addColorStop(0, "#fff");
+    gradient.addColorStop(1, this.color);
+    ctx.fillStyle = gradient;
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(0,0,0,0.25)";
-    ctx.stroke();
-
-    ctx.restore();
   }
-
   update() {
     this.x += this.speedX;
     this.y += this.speedY;
     this.speedY += gravity;
-    this.rotation += this.spin;
   }
 }
 
 function spawnFruit() {
-  if (gameOver || !canvas) return;
-
-  const size = 60 + Math.random() * 25;
-  const x = 60 + Math.random() * (canvas.width - 120);
-  const y = canvas.height + size;
-  const color = `hsl(${Math.random() * 360}, 90%, 45%)`;
-  const speedX = -1.5 + Math.random() * 3;
-  const speedY = -8 - Math.random() * 3;
-
+  if (gameOver) return;
+  const size = 55 + Math.random() * 15; // besar & realistik
+  const x = Math.random() * canvas.width;
+  const y = canvas.height + 30;
+  const color = `hsl(${Math.random() * 360}, 70%, 55%)`;
+  const speedX = -2 + Math.random() * 4;
+  const speedY = -10 - Math.random() * 3;
   fruits.push(new Fruit(x, y, size, color, speedX, speedY));
 }
 
 function animate() {
-  if (!ctx || !canvas) return;
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#fff";
-  ctx.font = "20px Poppins";
   ctx.fillText(`Score: ${score}`, 20, 30);
   ctx.fillText(`Lives: ${lives}`, canvas.width - 100, 30);
 
   fruits.forEach((fruit, index) => {
     fruit.update();
     fruit.draw();
-
-    if (fruit.y - fruit.size > canvas.height + 50) {
+    if (fruit.y - fruit.size > canvas.height) {
       fruits.splice(index, 1);
       if (--lives <= 0) gameOver = true;
     }
@@ -182,128 +140,68 @@ function animate() {
   }
 }
 
-if (canvas) {
-  canvas.addEventListener("mousemove", (e) => {
-    fruits.forEach((fruit, index) => {
-      const dx = e.offsetX - fruit.x;
-      const dy = e.offsetY - fruit.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < fruit.size && !fruit.isSliced) {
-        fruit.isSliced = true;
-        sliceSound.currentTime = 0;
-        sliceSound.play();
-        score += 10;
-        fruits.splice(index, 1);
-      }
-    });
+canvas.addEventListener("mousemove", (e) => {
+  fruits.forEach((fruit, index) => {
+    const dx = e.offsetX - fruit.x;
+    const dy = e.offsetY - fruit.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < fruit.size && !fruit.isSliced) {
+      fruit.isSliced = true;
+      sliceSound.currentTime = 0;
+      sliceSound.play();
+      score += 10;
+      fruits.splice(index, 1);
+    }
   });
+});
 
-  setInterval(spawnFruit, 800);
-  animate();
-}
+setInterval(spawnFruit, 1000); // seimbang: tak terlalu cepat
+animate();
 
-// ====================================================
-// ========== BALLOON POP GAME ========================
-// ====================================================
-
+// ========== BALLOON POP GAME ==========
 let balloonInterval;
-let activeRises = [];
-const popSound = new Audio("assets/balloon-pop.mp3");
-popSound.volume = 0.7;
-
 function startBalloonGame() {
   const area = document.getElementById("balloon-game");
-  if (!area) return;
-
   area.innerHTML = "";
   let score = 0;
-  let gameOver = false;
-  let rainbowMode = false;
-
   const scoreDisplay = document.createElement("div");
   scoreDisplay.className = "score-display";
   scoreDisplay.textContent = "Score: 0 🎈";
   area.appendChild(scoreDisplay);
 
-  const rainbowBanner = document.createElement("div");
-  rainbowBanner.className = "rainbow-banner";
-  rainbowBanner.textContent = "";
-  area.appendChild(rainbowBanner);
+  const popSound = new Audio("assets/pop.mp3");
 
   balloonInterval = setInterval(() => {
-    if (gameOver) return;
-
     const balloon = document.createElement("div");
     balloon.className = "balloon";
     balloon.textContent = "🎈";
-
-    const size = 35 + Math.random() * 25;
-    balloon.style.fontSize = `${size}px`;
-    balloon.style.left = Math.random() * 85 + "%";
+    balloon.style.left = Math.random() * 90 + "%";
     balloon.style.bottom = "0px";
-
-    if (rainbowMode) {
-      const hue = Math.floor(Math.random() * 360);
-      balloon.style.filter = `drop-shadow(0 0 6px hsl(${hue},100%,65%))`;
-      balloon.style.color = `hsl(${hue},100%,60%)`;
-    }
-
-    const riseSpeed = rainbowMode ? 5 + Math.random() * 2 : 3 + Math.random() * 2;
+    balloon.style.fontSize = 45 + Math.random() * 10 + "px";
     area.appendChild(balloon);
 
     let bottom = 0;
     const rise = setInterval(() => {
-      if (gameOver) {
-        balloon.remove();
-        clearInterval(rise);
-        return;
-      }
-      bottom += riseSpeed;
+      bottom += 3;
       balloon.style.bottom = bottom + "px";
-      if (bottom > 450) {
+      if (bottom > 400) {
         balloon.remove();
         clearInterval(rise);
       }
     }, 40);
 
-    activeRises.push(rise);
-
     balloon.addEventListener("click", () => {
-      balloon.style.transition = "transform 0.1s ease-out";
-      balloon.style.transform = "scale(1.4)";
       popSound.currentTime = 0;
       popSound.play();
-      setTimeout(() => balloon.remove(), 120);
-      clearInterval(rise);
       score++;
       scoreDisplay.textContent = "Score: " + score + " 🎈";
-
-      if (!rainbowMode && score >= 10) {
-        rainbowMode = true;
-        rainbowBanner.textContent = "🌈 RAINBOW MODE AKTIF!";
-        rainbowBanner.style.animation = "glowText 1s infinite alternate";
-      }
-
-      if (score >= 30) {
-        endBalloonGame("🎉 Anda berjaya pop 30 belon!");
-        gameOver = true;
-      }
+      balloon.remove();
+      clearInterval(rise);
     });
-  }, 700);
+  }, 1000); // stabil & tak serabut
 }
 
 function stopBalloonGame() {
   clearInterval(balloonInterval);
-  activeRises.forEach(clearInterval);
-  const area = document.getElementById("balloon-game");
-  if (area) area.innerHTML = "";
+  document.getElementById("balloon-game").innerHTML = "";
 }
-
-function endBalloonGame(message) {
-  clearInterval(balloonInterval);
-  activeRises.forEach(clearInterval);
-  const area = document.getElementById("balloon-game");
-  if (area) area.innerHTML = `<div class="end-msg">${message}</div>`;
-}
-
