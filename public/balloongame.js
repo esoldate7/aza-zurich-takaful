@@ -1,26 +1,21 @@
-// ======== BALLOON POP GAME ========
+// ======== BALLOON POP GAME (MODAL VERSION) ========
 let balloonInterval;
+let bpScore = 0;
 
 function startBalloonGame() {
   stopBalloonGame();
 
-  const area = document.getElementById("balloon-game");
+  const area = document.getElementById("balloonCanvasArea");
   area.innerHTML = "";
 
-  let score = 0;
-
-  const scoreBox = document.createElement("div");
-  scoreBox.className = "score-display";
-  scoreBox.textContent = "Score: 0 🎈";
-  scoreBox.style.color = "#fff";
-  scoreBox.style.padding = "10px";
-  area.appendChild(scoreBox);
+  bpScore = 0;
+  document.getElementById("bpScore").textContent = bpScore;
 
   balloonInterval = setInterval(() => {
     const balloon = document.createElement("div");
     balloon.className = "balloon";
-
     balloon.textContent = "🎈";
+
     balloon.style.position = "absolute";
     balloon.style.left = Math.random() * 90 + "%";
     balloon.style.bottom = "0px";
@@ -28,7 +23,6 @@ function startBalloonGame() {
     const size = 40 + Math.random() * 20;
     balloon.style.fontSize = size + "px";
 
-    // rainbow effect
     const hue = Math.floor(Math.random() * 360);
     balloon.style.filter = `hue-rotate(${hue}deg)`;
 
@@ -39,7 +33,7 @@ function startBalloonGame() {
       bottom += 3;
       balloon.style.bottom = bottom + "px";
 
-      if (bottom > 420) {
+      if (bottom > area.clientHeight) {
         balloon.remove();
         clearInterval(rise);
       }
@@ -49,20 +43,22 @@ function startBalloonGame() {
       const pop = new Audio("assets/pop.mp3");
       pop.play();
 
-      score++;
-      scoreBox.textContent = "Score: " + score + " 🎈";
+      bpScore++;
+      document.getElementById("bpScore").textContent = bpScore;
 
       balloon.remove();
       clearInterval(rise);
     });
+
   }, 900);
 }
 
 function stopBalloonGame() {
   clearInterval(balloonInterval);
-  const area = document.getElementById("balloon-game");
+  const area = document.getElementById("balloonCanvasArea");
   if (area) area.innerHTML = "";
 }
-// supaya boleh panggil dari script.js / inline onclick
+
+// expose globally
 window.startBalloonGame = startBalloonGame;
 window.stopBalloonGame = stopBalloonGame;
