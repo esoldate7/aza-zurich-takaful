@@ -41,7 +41,6 @@ async function fetchWaktuFromESolat(zone) {
   const solatResult = document.getElementById("solatResult");
   solatResult.textContent = '⏳ Memuatkan waktu solat...';
   try {
-    // 🔧 Override Putrajaya supaya ikut KL (WLY01)
     if (zone === "WLY02") zone = "WLY01";
 
     const r = await fetch(`https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${zone}`);
@@ -64,32 +63,7 @@ async function fetchWaktuFromESolat(zone) {
     console.error(err);
   }
 }
-// ========== LITE GAMES SWITCHER ==========
-function showGame(type) {
-  const fruitArea = document.getElementById("fruit-game");
-  const balloonArea = document.getElementById("balloon-game");
 
-  if (type === "fruit") {
-    fruitArea.style.display = "block";
-    balloonArea.style.display = "none";
-
-    // Start Fruit Game
-    if (window.startFruitGame) startFruitGame();
-
-    // Stop Balloon Game
-    if (window.stopBalloonGame) stopBalloonGame();
-
-  } else if (type === "balloon") {
-    balloonArea.style.display = "block";
-    fruitArea.style.display = "none";
-
-    // Start Balloon Game
-    if (window.startBalloonGame) startBalloonGame();
-
-    // Stop Fruit Game
-    if (window.stopFruitGame) stopFruitGame();
-  }
-}
 // ========== LITE GAMES SWITCHER ==========
 function showGame(type) {
   const fruitArea = document.getElementById("fruit-game");
