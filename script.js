@@ -64,5 +64,29 @@ async function fetchWaktuFromESolat(zone) {
     console.error(err);
   }
 }
+// ========== LITE GAMES SWITCHER ==========
+function showGame(type) {
+  const fruitArea = document.getElementById("fruit-game");
+  const balloonArea = document.getElementById("balloon-game");
 
-// ========== FRUIT SLICE GAME ==========//
+  if (type === "fruit") {
+    fruitArea.style.display = "block";
+    balloonArea.style.display = "none";
+
+    // Start Fruit Game
+    if (window.startFruitGame) startFruitGame();
+
+    // Stop Balloon Game
+    if (window.stopBalloonGame) stopBalloonGame();
+
+  } else if (type === "balloon") {
+    balloonArea.style.display = "block";
+    fruitArea.style.display = "none";
+
+    // Start Balloon Game
+    if (window.startBalloonGame) startBalloonGame();
+
+    // Stop Fruit Game
+    if (window.stopFruitGame) stopFruitGame();
+  }
+}
