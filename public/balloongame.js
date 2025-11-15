@@ -63,3 +63,6 @@ function stopBalloonGame() {
   const area = document.getElementById("balloon-game");
   if (area) area.innerHTML = "";
 }
+// supaya boleh panggil dari script.js / inline onclick
+window.startBalloonGame = startBalloonGame;
+window.stopBalloonGame = stopBalloonGame;
