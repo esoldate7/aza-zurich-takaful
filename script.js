@@ -90,3 +90,23 @@ function showGame(type) {
     if (window.stopFruitGame) stopFruitGame();
   }
 }
+// ========== LITE GAMES SWITCHER ==========
+function showGame(type) {
+  const fruitArea = document.getElementById("fruit-game");
+  const balloonArea = document.getElementById("balloon-game");
+
+  if (type === "fruit") {
+    fruitArea.style.display = "block";
+    balloonArea.style.display = "none";
+
+    if (window.startFruitGame) startFruitGame();
+    if (window.stopBalloonGame) stopBalloonGame();
+
+  } else if (type === "balloon") {
+    fruitArea.style.display = "none";
+    balloonArea.style.display = "block";
+
+    if (window.startBalloonGame) startBalloonGame();
+    if (window.stopFruitGame) stopFruitGame();
+  }
+}
