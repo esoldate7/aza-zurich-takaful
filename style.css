@@ -121,3 +121,48 @@ footer {
   50% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff; }
   100% { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; }
   }
+#balloonModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+}
+
+#balloonModal.show {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.balloon-wrap {
+  width: 95%;
+  max-width: 480px;
+  height: 95%;
+  background: #1a1a1a;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fff;
+}
+
+.balloon-top,
+.balloon-bottom {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.balloon-canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #111;
+  }
