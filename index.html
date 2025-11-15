@@ -211,6 +211,21 @@
     </div>
   </div>
 
+  <!-- ===== Balloon Pop Modal Fullscreen ===== -->
+<div id="balloonModal" aria-hidden="true">
+  <div class="balloon-wrap">
+    <div class="balloon-top">
+      <div style="font-weight:700">🎈 Balloon Pop — BroChat</div>
+      <div style="font-weight:700">Skor: <span id="bpScore">0</span></div>
+    </div>
+
+    <div id="balloonCanvasArea" class="balloon-canvas-area"></div>
+
+    <div class="balloon-bottom">
+      <button id="bpClose" class="fg-btn">✖ Tutup</button>
+    </div>
+  </div>
+</div>
 <script>
 /* ====================================================
    Single-file app script — safe init after DOMContentLoaded
