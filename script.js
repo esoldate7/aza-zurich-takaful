@@ -66,21 +66,29 @@ async function fetchWaktuFromESolat(zone) {
 
 // ========== LITE GAMES SWITCHER ==========
 function showGame(type) {
-  const fruitArea = document.getElementById("fruit-game");
-  const balloonArea = document.getElementById("balloon-game");
+  const fruitModal = document.getElementById("fruitModal");
+  const balloonModal = document.getElementById("balloonModal");
 
   if (type === "fruit") {
-    fruitArea.style.display = "block";
-    balloonArea.style.display = "none";
+    // close balloon modal
+    balloonModal.classList.remove("show");
+    stopBalloonGame();
 
-    if (window.startFruitGame) startFruitGame();
-    if (window.stopBalloonGame) stopBalloonGame();
+    // open fruit modal
+    fruitModal.classList.add("show");
+    startFG();
 
   } else if (type === "balloon") {
-    fruitArea.style.display = "none";
-    balloonArea.style.display = "block";
+    // close fruit modal
+    fruitModal.classList.remove("show");
+    stopFG();
 
-    if (window.startBalloonGame) startBalloonGame();
-    if (window.stopFruitGame) stopFruitGame();
+    // open balloon modal
+    balloonModal.classList.add("show");
+    startBalloonGame();
   }
 }
+document.getElementById("bpClose").addEventListener("click", () => {
+  document.getElementById("balloonModal").classList.remove("show");
+  stopBalloonGame();
+});
