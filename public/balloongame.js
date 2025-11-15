@@ -1,5 +1,16 @@
 // balloongame.js
 // Controls inline Balloon Pop in #balloon-game. Exposes startBalloonGame() & stopBalloonGame().
+<!-- ================= BALLOON POP GAME ================= -->
+<div id="balloon-game" 
+     style="
+       position: relative;
+       width: 100%;
+       height: 450px;
+       overflow: hidden;
+       margin-top: 20px;
+       display: none;
+     ">
+</div>
 
 (function(){
   const $ = s => document.querySelector(s);
