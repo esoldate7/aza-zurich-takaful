@@ -1,21 +1,21 @@
-// ======== BALLOON POP GAME (MODAL VERSION) ========
+// ======== BALLOON POP GAME ========
 let balloonInterval;
-let bpScore = 0;
 
 function startBalloonGame() {
   stopBalloonGame();
 
-  const area = document.getElementById("balloonCanvasArea");
+  const area = document.getElementById("balloon-game-modal");
   area.innerHTML = "";
 
-  bpScore = 0;
-  document.getElementById("bpScore").textContent = bpScore;
+  let score = 0;
+  const scoreBox = document.getElementById("bpScore");
+  scoreBox.textContent = score;
 
   balloonInterval = setInterval(() => {
     const balloon = document.createElement("div");
     balloon.className = "balloon";
-    balloon.textContent = "🎈";
 
+    balloon.textContent = "🎈";
     balloon.style.position = "absolute";
     balloon.style.left = Math.random() * 90 + "%";
     balloon.style.bottom = "0px";
@@ -33,7 +33,7 @@ function startBalloonGame() {
       bottom += 3;
       balloon.style.bottom = bottom + "px";
 
-      if (bottom > area.clientHeight) {
+      if (bottom > area.offsetHeight) {
         balloon.remove();
         clearInterval(rise);
       }
@@ -43,22 +43,17 @@ function startBalloonGame() {
       const pop = new Audio("assets/pop.mp3");
       pop.play();
 
-      bpScore++;
-      document.getElementById("bpScore").textContent = bpScore;
+      score++;
+      scoreBox.textContent = score;
 
       balloon.remove();
       clearInterval(rise);
     });
-
   }, 900);
 }
 
 function stopBalloonGame() {
   clearInterval(balloonInterval);
-  const area = document.getElementById("balloonCanvasArea");
+  const area = document.getElementById("balloon-game-modal");
   if (area) area.innerHTML = "";
 }
-
-// expose globally
-window.startBalloonGame = startBalloonGame;
-window.stopBalloonGame = stopBalloonGame;
