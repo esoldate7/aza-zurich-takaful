@@ -212,20 +212,63 @@
   </div>
 
   <!-- ===== Balloon Pop Modal Fullscreen ===== -->
-<div id="balloonModal" aria-hidden="true">
-  <div class="balloon-wrap">
-    <div class="balloon-top">
-      <div style="font-weight:700">🎈 Balloon Pop — BroChat</div>
-      <div style="font-weight:700">Skor: <span id="bpScore">0</span></div>
+<div id="balloonModal" aria-hidden="true" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100vw; height:100vh;
+  background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(4px);
+  z-index:99999;
+  justify-content:center;
+  align-items:center;
+">
+  <div class="balloon-wrap" style="
+    width:90%;
+    max-width:450px;
+    height:90%;
+    background:#111;
+    border-radius:16px;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    color:#fff;
+  ">
+
+    <!-- Top Bar -->
+    <div class="balloon-top" style="
+      display:flex;
+      justify-content:space-between;
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:10px;
+    ">
+      <div>🎈 Balloon Pop — BroChat</div>
+      <div>Skor: <span id="bpScore">0</span></div>
     </div>
 
-    <div id="balloonCanvasArea" class="balloon-canvas-area"></div>
+    <!-- Game Area -->
+    <div id="balloon-game-modal" style="
+      flex:1;
+      background:#222;
+      border-radius:12px;
+      position:relative;
+      overflow:hidden;
+    "></div>
 
-    <div class="balloon-bottom">
-      <button id="bpClose" class="fg-btn">✖ Tutup</button>
+    <!-- Bottom Buttons -->
+    <div class="balloon-bottom" style="
+      display:flex;
+      justify-content:space-between;
+      margin-top:12px;
+    ">
+      <button id="bpRestart" class="bp-btn" style="padding:10px 18px; border-radius:8px;">🔁 Restart</button>
+      <button id="bpClose" class="bp-btn" style="padding:10px 18px; border-radius:8px;">✖ Tutup</button>
     </div>
+
   </div>
 </div>
+  
 <script>
 /* ====================================================
    Single-file app script — safe init after DOMContentLoaded
