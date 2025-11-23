@@ -694,9 +694,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
   <script src="script.js" defer></script>
-  <!-- ✅ Tambah dua ni kat sini, sebelum </body> -->
-  <script src="./fruitgame.js"></script>
-  <script src="./balloongame.js"></script>
+  <!-- ✅ Tambah  kat sini, sebelum </body> -->
+  <script src="fruit-game.js"></script>
+<script src="balloon-game.js"></script>
+
+<script>
+  // OPEN FRUIT MODAL
+  function openFruitModal() {
+    document.getElementById("fruitModal").style.display = "flex";
+    startFruitGame();
+  }
+
+  // CLOSE FRUIT MODAL
+  document.getElementById("fgClose").addEventListener("click", () => {
+    closeFruitGame();
+    document.getElementById("fruitModal").style.display = "none";
+  });
+
+  // OPEN BALLOON MODAL
+  function openBalloonModal() {
+    document.getElementById("balloonModal").style.display = "flex";
+    startBalloonGame();
+  }
+
+  // CLOSE BALLOON MODAL
+  document.getElementById("bpClose").addEventListener("click", () => {
+    stopBalloonGame();
+    document.getElementById("balloonModal").style.display = "none";
+  });
+</script>
 </body>
 </html>
 
