@@ -721,6 +721,52 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("balloonModal").style.display = "none";
   });
 </script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ==========================
+     FRUIT MODAL CONTROLLER
+     ========================== */
+  const fruitModal = document.getElementById("fruitModal");
+  const fruitCloseBtn = document.getElementById("fgClose");
+
+  // OPEN
+  window.openFruitModal = () => {
+    fruitModal.style.display = "flex";
+    startFruitGame();
+  };
+
+  // CLOSE
+  if (fruitCloseBtn) {
+    fruitCloseBtn.onclick = () => {
+      stopFruitGame();  // ✅ function yang wujud dalam fruit-game.js
+      fruitModal.style.display = "none";
+    };
+  }
+
+
+  /* ==========================
+     BALLOON MODAL CONTROLLER
+     ========================== */
+  const balloonModal = document.getElementById("balloonModal");
+  const balloonCloseBtn = document.getElementById("bpClose");
+
+  // OPEN
+  window.openBalloonModal = () => {
+    balloonModal.style.display = "flex";
+    startBalloonGame();
+  };
+
+  // CLOSE
+  if (balloonCloseBtn) {
+    balloonCloseBtn.onclick = () => {
+      stopBalloonGame();
+      balloonModal.style.display = "none";
+    };
+  }
+
+});
+</script>
 </body>
 </html>
 
