@@ -40,6 +40,7 @@ function openQuoteForm(name) {
 async function fetchWaktuFromESolat(zone) {
   const solatResult = document.getElementById("solatResult");
   solatResult.textContent = '⏳ Memuatkan waktu solat...';
+
   try {
     if (zone === "WLY02") zone = "WLY01";
 
@@ -64,17 +65,29 @@ async function fetchWaktuFromESolat(zone) {
   }
 }
 
-// ========== LITE GAMES SWITCHER ==========
-function showGame(game) {
+// ========== GAME CONTROLLERS (NEW) ==========
 
-  if (game === "fruit") {
-    document.getElementById("fruitModal").style.display = "flex";
-    startFruitGame();
-  }
+// Dibuka bila user tekan butang “Fruit Slice”
+function openFruitModal() {
+  document.getElementById("fruitModal").style.display = "flex";
+  startFruitGame();
+}
 
-  if (game === "balloon") {
-    document.getElementById("balloonModal").style.display = "flex";
-    document.getElementById("bpScore").textContent = 0;
-    startBalloonGame();
-  }
+// Diklik bila user tekan X / Close
+function closeFruitGame() {
+  stopFruitGame();
+  document.getElementById("fruitModal").style.display = "none";
+}
+
+// Dibuka bila user tekan butang “Balloon Pop”
+function openBalloonModal() {
+  document.getElementById("balloonModal").style.display = "flex";
+  document.getElementById("bpScore").textContent = 0;
+  startBalloonGame();
+}
+
+// Close Balloon Modal
+function closeBalloonModal() {
+  stopBalloonGame();
+  document.getElementById("balloonModal").style.display = "none";
 }
